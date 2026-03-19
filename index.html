@@ -344,7 +344,11 @@
     position: relative;
   }
 
-  /* Tooltip */
+  .active-wave {
+    background: var(--ink) !important;
+    color: var(--warm-white) !important;
+    border-color: var(--ink) !important;
+  }
   .tooltip {
     position: fixed;
     background: var(--ink);
@@ -465,6 +469,16 @@
       </div>
     </div>
 
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px;">Waveform</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;" id="wave-btns">
+        <button class="btn wave-btn active-wave" style="font-size:10px;padding:5px 12px" data-wave="sine">Sine</button>
+        <button class="btn wave-btn" style="font-size:10px;padding:5px 12px" data-wave="sawtooth">Saw</button>
+        <button class="btn wave-btn" style="font-size:10px;padding:5px 12px" data-wave="square">Square</button>
+        <button class="btn wave-btn" style="font-size:10px;padding:5px 12px" data-wave="triangle">Triangle</button>
+      </div>
+    </div>
+
     <div style="margin-top:auto;padding-top:20px;border-top:1px solid var(--rule)">
       <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px;">Presets</div>
       <div style="display:flex;flex-wrap:wrap;gap:7px;">
@@ -505,6 +519,69 @@
 <div class="tooltip" id="tooltip"></div>
 
 <script>
+// ── Web Audio ──────────────────────────────────────────
+let audioCtx = null;
+let currentOsc = null;
+let currentGain = null;
+let selectedWave = 'sine';
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playSound() {
+  const ctx = getAudioCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+
+  // Stop any existing note
+  stopSound();
+
+  const now = ctx.currentTime;
+  const A = params.attack  / 1000;
+  const D = params.decay   / 1000;
+  const S = params.sustain / 100;
+  const R = params.release / 1000;
+  // sustain holds for same duration as visual
+  const sustainDur = (params.attack + params.decay + params.release) * 0.28 / 1000;
+
+  const osc  = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = selectedWave;
+  osc.frequency.value = 261.63; // C4
+
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(1,   now + A);
+  gain.gain.linearRampToValueAtTime(S,   now + A + D);
+  gain.gain.setValueAtTime(S,            now + A + D + sustainDur);
+  gain.gain.linearRampToValueAtTime(0,   now + A + D + sustainDur + R);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + A + D + sustainDur + R + 0.05);
+
+  currentOsc  = osc;
+  currentGain = gain;
+
+  osc.onended = () => { currentOsc = null; currentGain = null; };
+}
+
+function stopSound() {
+  if (currentOsc) {
+    try {
+      const ctx = getAudioCtx();
+      const now = ctx.currentTime;
+      currentGain.gain.cancelScheduledValues(now);
+      currentGain.gain.setValueAtTime(currentGain.gain.value, now);
+      currentGain.gain.linearRampToValueAtTime(0, now + 0.03);
+      currentOsc.stop(now + 0.04);
+    } catch(e) {}
+    currentOsc = null; currentGain = null;
+  }
+}
+
 // ── State ──────────────────────────────────────────────
 const PAD = { left: 48, right: 48, top: 30, bottom: 40 };
 const H = 260;
@@ -822,18 +899,22 @@ function playAnimation() {
   if (animRaf) {
     cancelAnimationFrame(animRaf);
     animRaf = null;
+    stopSound();
     document.getElementById('play-btn').classList.remove('playing');
     document.getElementById('play-btn').textContent = '▶ Play';
     draw();
     return;
   }
+
+  // Fire real audio
+  playSound();
+
   const p = getPoints();
   const totalDuration = p.total;
-  const SPEED = 0.35; // ms per real ms
+  const SPEED = 0.35;
   document.getElementById('play-btn').classList.add('playing');
   document.getElementById('play-btn').textContent = '◼ Stop';
 
-  // Highlight stage cards
   const stages = ['sc-attack','sc-decay','sc-sustain','sc-release'];
   stages.forEach(id => document.getElementById(id).classList.remove('active-stage'));
 
@@ -858,7 +939,6 @@ function playAnimation() {
 
     draw(elapsed);
 
-    // Stage highlighting
     stages.forEach(id => document.getElementById(id).classList.remove('active-stage'));
     if      (elapsed <= p.peak.t)    document.getElementById('sc-attack').classList.add('active-stage');
     else if (elapsed <= p.sus.t)     document.getElementById('sc-decay').classList.add('active-stage');
@@ -887,6 +967,15 @@ function resetDefaults() {
 
 // ── Init ───────────────────────────────────────────────
 updateEnvelope();
+
+// Waveform selector
+document.querySelectorAll('.wave-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    selectedWave = btn.dataset.wave;
+    document.querySelectorAll('.wave-btn').forEach(b => b.classList.remove('active-wave'));
+    btn.classList.add('active-wave');
+  });
+});
 
 // Re-draw on resize
 window.addEventListener('resize', () => draw());
