@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>ADSR Studio</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -12,206 +12,255 @@
   --rule:#DDD6CB;--amber:#C4813A;--amber-pale:#F2E0C8;--r:4px;
 }
 html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-weight:300;overflow:hidden}
-.mast{height:52px;border-bottom:1px solid var(--rule);display:flex;align-items:center;padding:0 24px;gap:16px;background:var(--paper);flex-shrink:0}
-.mast-logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;letter-spacing:.04em}
+
+/* ── Mast ── */
+.mast{height:52px;border-bottom:1px solid var(--rule);display:flex;align-items:center;padding:0 20px;gap:12px;background:var(--paper);flex-shrink:0;z-index:10}
+.mast-logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;letter-spacing:.04em}
 .mast-sub{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
-.mast-spacer{flex:1}
-.mast-actions{display:flex;gap:8px}
+.spacer{flex:1}
+
+/* ── App shell ── */
 .app{display:flex;height:calc(100vh - 52px);overflow:hidden}
-.env-panel{width:220px;flex-shrink:0;border-right:1px solid var(--rule);background:var(--paper);display:flex;flex-direction:column;overflow:hidden}
-.panel-head{padding:14px 16px 10px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:8px}
+
+/* ── Left panel ── */
+.env-panel{width:200px;flex-shrink:0;border-right:1px solid var(--rule);background:var(--paper);display:flex;flex-direction:column;overflow:hidden}
+.panel-head{padding:12px 14px 10px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:8px}
 .panel-title{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);flex:1}
 .env-list{flex:1;overflow-y:auto;padding:6px 0}
-.env-row{display:flex;align-items:center;padding:8px 10px;cursor:pointer;border-left:3px solid transparent;transition:background .12s;position:relative;gap:4px}
+.env-row{display:flex;align-items:center;padding:8px 10px;cursor:pointer;border-left:3px solid transparent;transition:background .12s;gap:4px}
 .env-row:hover{background:rgba(0,0,0,.03)}
 .env-row.selected{background:var(--amber-pale);border-left-color:var(--amber)}
-.env-swatch{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-right:6px}
+.env-swatch{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-right:6px;transition:opacity .12s}
 .env-name-input{flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:400;color:var(--ink);cursor:pointer;min-width:0}
-.env-icons{display:flex;gap:2px;opacity:0;transition:opacity .12s}
+.env-icons{display:flex;gap:1px;opacity:0;transition:opacity .12s}
 .env-row:hover .env-icons,.env-row.selected .env-icons{opacity:1}
-.icon-btn{width:20px;height:20px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:3px;color:var(--ink3);font-size:11px;transition:background .1s,color .1s;padding:0;flex-shrink:0}
+.icon-btn{width:22px;height:22px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:3px;color:var(--ink3);font-size:11px;transition:background .1s,color .1s;padding:0;flex-shrink:0}
 .icon-btn:hover{background:rgba(0,0,0,.08);color:var(--ink)}
-.icon-btn.muted{color:var(--amber)}
-.icon-btn.soloed{color:#3A7BC8}
-.env-panel-foot{border-top:1px solid var(--rule);padding:10px 12px}
+.icon-btn.on{color:var(--amber)}
+.icon-btn.solo-on{color:#3A7BC8}
+.env-foot{border-top:1px solid var(--rule);padding:10px 12px;font-size:9px;color:var(--ink3);letter-spacing:.06em;line-height:1.7}
+
+/* ── Center ── */
 .center{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
-.canvas-head{height:44px;border-bottom:1px solid var(--rule);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;background:var(--paper)}
-.canvas-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
-.canvas-body{flex:1;padding:20px;position:relative;min-height:0}
-#env-svg{width:100%;height:100%;display:block;background:var(--paper);border:1px solid var(--rule);border-radius:var(--r)}
-.ctrl-panel{width:268px;flex-shrink:0;border-left:1px solid var(--rule);background:var(--paper);display:flex;flex-direction:column;overflow:hidden}
-.ctrl-head{padding:14px 20px 10px;border-bottom:1px solid var(--rule)}
-.ctrl-title{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
-.ctrl-env-name{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600}
-.ctrl-body{flex:1;overflow-y:auto;padding:16px 20px}
-.sl-group{margin-bottom:18px}
-.sl-head{display:flex;align-items:baseline;margin-bottom:7px}
+.canvas-head{height:44px;border-bottom:1px solid var(--rule);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;background:var(--paper)}
+.canvas-lbl{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.canvas-body{flex:1;padding:14px;display:flex;flex-direction:column;min-height:220px}
+#env-svg{flex:1;width:100%;min-height:180px;display:block;background:var(--paper);border:1px solid var(--rule);border-radius:var(--r)}
+
+/* ── Right panel ── */
+.ctrl-panel{width:258px;flex-shrink:0;border-left:1px solid var(--rule);background:var(--paper);display:flex;flex-direction:column;overflow:hidden}
+.ctrl-head{padding:12px 18px 10px;border-bottom:1px solid var(--rule)}
+.ctrl-lbl{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
+.ctrl-name{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600}
+.ctrl-body{flex:1;overflow-y:auto;padding:14px 18px}
+
+/* ── Sliders ── */
+.sl-g{margin-bottom:15px}
+.sl-head{display:flex;align-items:baseline;margin-bottom:6px}
 .sl-label{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500}
-.sl-unit{font-size:9px;color:var(--ink3);margin-left:5px;letter-spacing:.06em}
+.sl-unit{font-size:9px;color:var(--ink3);margin-left:4px;letter-spacing:.06em}
 .sl-val{margin-left:auto;font-size:12px;font-variant-numeric:tabular-nums;letter-spacing:.04em}
 .sl-track{position:relative;height:3px;background:var(--rule);border-radius:2px}
 .sl-fill{position:absolute;left:0;top:0;bottom:0;border-radius:2px;pointer-events:none}
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;background:transparent;outline:none;cursor:pointer;position:relative;z-index:1}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--ink);border:2px solid var(--bg);box-shadow:0 0 0 1px var(--ink);transition:transform .1s;margin-top:-5px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--ink);border:2px solid var(--bg);box-shadow:0 0 0 1.5px var(--ink);transition:transform .1s;margin-top:-6px}
 input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3)}
 input[type=range]::-webkit-slider-runnable-track{height:3px;background:transparent}
-input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--ink);border:2px solid var(--bg)}
-.divider{height:1px;background:var(--rule);margin:12px 0}
-.chip-group{display:flex;flex-wrap:wrap;gap:5px}
-.chip{padding:4px 11px;border:1px solid var(--rule);border-radius:20px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;background:transparent;font-family:'DM Sans',sans-serif;color:var(--ink);transition:background .12s,color .12s,border-color .12s}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--ink);border:2px solid var(--bg)}
+
+/* ── UI atoms ── */
+.hr{height:1px;background:var(--rule);margin:12px 0}
+.chip-row{display:flex;flex-wrap:wrap;gap:5px}
+.chip{padding:4px 11px;border:1px solid var(--rule);border-radius:20px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;background:transparent;font-family:'DM Sans',sans-serif;color:var(--ink);transition:background .12s,color .12s}
 .chip:hover{border-color:var(--ink2)}
-.chip.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.color-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px}
-.color-dot{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .12s,transform .1s}
-.color-dot:hover{transform:scale(1.15)}
-.color-dot.active{border-color:var(--ink)}
-.info-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.info-chip{padding:4px 10px;background:var(--bg);border:1px solid var(--rule);border-radius:3px;font-size:10px;color:var(--ink2);letter-spacing:.04em}
-.info-chip span{font-weight:500;color:var(--ink)}
-.preset-grid{display:flex;flex-wrap:wrap;gap:5px}
-.preset-btn{padding:5px 11px;border:1px solid var(--rule);border-radius:2px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-family:'DM Sans',sans-serif;background:transparent;color:var(--ink);cursor:pointer;transition:background .12s,color .12s}
-.preset-btn:hover{background:var(--ink);color:var(--paper)}
-.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 15px;border:1px solid var(--rule);border-radius:2px;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:transparent;color:var(--ink);cursor:pointer;transition:background .14s,color .14s,border-color .14s;white-space:nowrap}
+.chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.color-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.cdot{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .12s,transform .1s}
+.cdot:hover{transform:scale(1.15)}
+.cdot.on{border-color:var(--ink)}
+.glance{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.gc{padding:4px 9px;background:var(--bg);border:1px solid var(--rule);border-radius:3px;font-size:10px;color:var(--ink2)}
+.gc span{font-weight:500;color:var(--ink)}
+.preset-row{display:flex;flex-wrap:wrap;gap:5px}
+.pbtn{padding:5px 10px;border:1px solid var(--rule);border-radius:2px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-family:'DM Sans',sans-serif;background:transparent;color:var(--ink);cursor:pointer;transition:background .12s,color .12s}
+.pbtn:hover{background:var(--ink);color:var(--paper)}
+.sec-lbl{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:7px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border:1px solid var(--rule);border-radius:2px;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:transparent;color:var(--ink);cursor:pointer;transition:background .14s,color .14s,border-color .14s;white-space:nowrap}
 .btn:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .btn-solid{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .btn-solid:hover{background:var(--amber);border-color:var(--amber)}
-.btn-sm{padding:5px 10px;font-size:9px}
-.view-toggle{display:flex;border:1px solid var(--rule);border-radius:3px;overflow:hidden}
-.view-opt{padding:5px 12px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border:none;background:transparent;font-family:'DM Sans',sans-serif;color:var(--ink3);transition:background .12s,color .12s}
-.view-opt.active{background:var(--ink);color:var(--paper)}
-.modal-overlay{position:fixed;inset:0;background:rgba(24,20,15,.45);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
-.modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--paper);border:1px solid var(--rule);border-radius:6px;width:520px;max-width:92vw;max-height:82vh;overflow:hidden;display:flex;flex-direction:column;transform:translateY(12px);transition:transform .2s;box-shadow:0 20px 60px rgba(0,0,0,.18)}
-.modal-overlay.open .modal{transform:translateY(0)}
-.modal-head{padding:20px 24px 14px;border-bottom:1px solid var(--rule);display:flex;align-items:center}
-.modal-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;flex:1}
-.modal-body{padding:20px 24px;overflow-y:auto;flex:1}
-.modal-foot{padding:14px 24px;border-top:1px solid var(--rule);display:flex;gap:8px;justify-content:flex-end}
-.exp-tabs{display:flex;border-bottom:1px solid var(--rule);margin-bottom:16px}
-.exp-tab{padding:8px 16px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;color:var(--ink3);transition:color .12s,border-color .12s;background:none;font-family:'DM Sans',sans-serif}
-.exp-tab.active{color:var(--ink);border-bottom-color:var(--ink)}
-.exp-panel{display:none}
-.exp-panel.active{display:block}
-.code-block{background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:14px 16px;font-family:monospace;font-size:11px;line-height:1.7;color:var(--ink2);max-height:220px;overflow:auto;white-space:pre;word-break:break-all}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);padding:9px 20px;border-radius:3px;font-size:11px;letter-spacing:.06em;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:300}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--rule);border-radius:3px}
-.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--ink3);padding:40px 0}
-.empty-icon{font-size:28px;opacity:.25}
-.empty-text{font-size:11px;letter-spacing:.06em}
+.btn-sm{padding:4px 9px;font-size:9px}
+.vtoggle{display:flex;border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.vopt{padding:4px 10px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border:none;background:transparent;font-family:'DM Sans',sans-serif;color:var(--ink3);transition:background .12s,color .12s}
+.vopt.on{background:var(--ink);color:var(--paper)}
+.snap-row{display:flex;align-items:center;gap:6px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);cursor:pointer;user-select:none}
+.snap-row input[type=checkbox]{width:12px;height:12px;cursor:pointer;accent-color:var(--amber)}
+
+/* ── Modal ── */
+.mover{position:fixed;inset:0;background:rgba(24,20,15,.45);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
+.mover.open{opacity:1;pointer-events:all}
+.modal{background:var(--paper);border:1px solid var(--rule);border-radius:6px;width:500px;max-width:92vw;max-height:82vh;overflow:hidden;display:flex;flex-direction:column;transform:translateY(14px);transition:transform .2s;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.mover.open .modal{transform:translateY(0)}
+.mhead{padding:18px 22px 14px;border-bottom:1px solid var(--rule);display:flex;align-items:center}
+.mtitle{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;flex:1}
+.mbody{padding:18px 22px;overflow-y:auto;flex:1}
+.mfoot{padding:12px 22px;border-top:1px solid var(--rule);display:flex;gap:8px;justify-content:flex-end}
+.etabs{display:flex;border-bottom:1px solid var(--rule);margin-bottom:14px}
+.etab{padding:7px 14px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;color:var(--ink3);transition:color .12s,border-color .12s;background:none;font-family:'DM Sans',sans-serif}
+.etab.on{color:var(--ink);border-bottom-color:var(--ink)}
+.epanel{display:none}
+.epanel.on{display:block}
+.code{background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:12px 14px;font-family:monospace;font-size:11px;line-height:1.7;color:var(--ink2);max-height:210px;overflow:auto;white-space:pre}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(18px);background:var(--ink);color:var(--paper);padding:8px 18px;border-radius:3px;font-size:11px;letter-spacing:.06em;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:300}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── scrollbar ── */
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--rule);border-radius:2px}
+
+/* ── Curve handle label ── */
+.curve-badge{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px}
+
+/* ═══════════════════ MOBILE ═══════════════════ */
+@media(max-width:800px){
+  html,body{overflow:hidden}
+  .app{flex-direction:column;height:calc(100vh - 52px)}
+  /* env strip across top */
+  .env-panel{width:100%;flex-shrink:0;height:90px;border-right:none;border-bottom:1px solid var(--rule);flex-direction:row}
+  .panel-head{flex-direction:column;justify-content:center;border-bottom:none;border-right:1px solid var(--rule);padding:8px 12px;min-width:72px;gap:4px}
+  .panel-title{writing-mode:initial}
+  .env-list{flex-direction:row;display:flex;overflow-x:auto;overflow-y:hidden;padding:8px 6px;gap:6px;align-items:center}
+  .env-row{flex-direction:column;align-items:center;gap:2px;padding:6px 8px;border-left:none;border-bottom:3px solid transparent;border-radius:var(--r);min-width:72px;background:var(--bg);flex-shrink:0}
+  .env-row.selected{background:var(--amber-pale);border-bottom-color:var(--amber);border-left:none}
+  .env-swatch{margin:0 auto 2px}
+  .env-icons{justify-content:center;gap:2px}
+  .env-foot{display:none}
+  /* canvas takes remaining space */
+  .center{flex:1;min-height:0}
+  .canvas-body{padding:10px;min-height:160px}
+  #env-svg{min-height:150px}
+  .canvas-head{padding:0 12px;height:38px;gap:6px}
+  /* ctrl as bottom sheet */
+  .ctrl-panel{width:100%;flex-shrink:0;height:220px;border-left:none;border-top:1px solid var(--rule)}
+  .ctrl-body{padding:10px 14px;display:flex;gap:14px;overflow-x:auto;align-items:flex-start}
+  .sl-g{min-width:130px;margin-bottom:0}
+  .hr{display:none}
+  .mast-sub{display:none}
+  .sec-block{display:none}
+}
+@media(max-width:480px){
+  .mast{padding:0 12px;gap:8px}
+  .mast-logo{font-size:17px}
+  .ctrl-panel{height:200px}
+  input[type=range]::-webkit-slider-thumb{width:18px;height:18px}
+  .icon-btn{width:26px;height:26px;font-size:13px}
+}
 </style>
 </head>
 <body>
+
 <header class="mast">
   <span class="mast-logo">ADSR</span>
   <span class="mast-sub">Studio</span>
-  <div class="mast-spacer"></div>
-  <div class="mast-actions">
-    <button class="btn" onclick="openImport()">↑ Import</button>
-    <button class="btn" onclick="openExport()">↓ Export</button>
-    <button class="btn btn-solid" id="play-all-btn" onclick="togglePlayAll()">▶ Play All</button>
+  <div class="spacer"></div>
+  <label class="snap-row" title="Snap handles to grid">
+    <input type="checkbox" id="snap-cb" onchange="snapEnabled=this.checked">
+    <span>Snap</span>
+  </label>
+  <div style="display:flex;gap:7px">
+    <button class="btn btn-sm" onclick="openImport()">↑ Import</button>
+    <button class="btn btn-sm" onclick="openExport()">↓ Export</button>
+    <button class="btn btn-solid btn-sm" id="play-all-btn" onclick="togglePlayAll()">▶ All</button>
   </div>
 </header>
 
 <div class="app">
+  <!-- left -->
   <div class="env-panel">
     <div class="panel-head">
       <span class="panel-title">Envelopes</span>
       <button class="btn btn-sm" onclick="addEnvelope()">+ Add</button>
     </div>
     <div class="env-list" id="env-list"></div>
-    <div class="env-panel-foot">
-      <div style="font-size:9px;color:var(--ink3);letter-spacing:.06em;line-height:1.7">
-        Click to select · Rename inline<br>Solo / Mute per layer
-      </div>
-    </div>
+    <div class="env-foot">Click to select<br>Rename inline · Solo / Mute</div>
   </div>
 
+  <!-- center -->
   <div class="center">
     <div class="canvas-head">
-      <span class="canvas-label">Envelope Shape</span>
-      <div class="view-toggle" style="margin-left:12px">
-        <button class="view-opt active" id="vt-overlay" onclick="setView('overlay')">Overlay</button>
-        <button class="view-opt" id="vt-stack" onclick="setView('stack')">Stack</button>
+      <span class="canvas-lbl">Envelope</span>
+      <div class="vtoggle" style="margin-left:8px">
+        <button class="vopt on" id="vt-ov" onclick="setView('overlay')">Overlay</button>
+        <button class="vopt" id="vt-st" onclick="setView('stack')">Stack</button>
       </div>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-        <span style="font-size:10px;color:var(--ink3)">Drag handles to reshape</span>
-        <button class="btn btn-sm" onclick="resetSelected()">Reset</button>
-      </div>
+      <span style="font-size:10px;color:var(--ink3);margin-left:8px" id="hint-txt">Drag ● handles · drag ◆ to curve</span>
+      <div class="spacer"></div>
+      <button class="btn btn-sm" onclick="resetSelected()">Reset</button>
     </div>
     <div class="canvas-body">
       <svg id="env-svg" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid meet"></svg>
     </div>
   </div>
 
+  <!-- right -->
   <div class="ctrl-panel">
     <div class="ctrl-head">
-      <div class="ctrl-title">Parameters</div>
-      <div class="ctrl-env-name" id="ctrl-env-name">—</div>
+      <div class="ctrl-lbl">Parameters</div>
+      <div class="ctrl-name" id="ctrl-name">—</div>
     </div>
     <div class="ctrl-body" id="ctrl-body">
-      <div class="empty-state">
-        <div class="empty-icon">◎</div>
-        <div class="empty-text">Select an envelope</div>
-      </div>
+      <div style="color:var(--ink3);font-size:11px;padding:20px 0;text-align:center">Select an envelope</div>
     </div>
   </div>
 </div>
 
-<!-- Export Modal -->
-<div class="modal-overlay" id="export-modal">
+<!-- Export modal -->
+<div class="mover" id="export-modal">
   <div class="modal">
-    <div class="modal-head">
-      <span class="modal-title">Export</span>
-      <button onclick="closeModal('export-modal')" style="border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--ink3);padding:0 4px">×</button>
+    <div class="mhead">
+      <span class="mtitle">Export</span>
+      <button onclick="closeModal('export-modal')" style="border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--ink3)">×</button>
     </div>
-    <div class="modal-body">
-      <div class="exp-tabs">
-        <button class="exp-tab active" onclick="switchTab('json',this)">JSON</button>
-        <button class="exp-tab" onclick="switchTab('svg',this)">SVG</button>
-        <button class="exp-tab" onclick="switchTab('css',this)">CSS Vars</button>
-        <button class="exp-tab" onclick="switchTab('webaudio',this)">Web Audio JS</button>
+    <div class="mbody">
+      <div class="etabs">
+        <button class="etab on" onclick="switchTab('json',this)">JSON</button>
+        <button class="etab" onclick="switchTab('svg',this)">SVG</button>
+        <button class="etab" onclick="switchTab('css',this)">CSS Vars</button>
+        <button class="etab" onclick="switchTab('js',this)">Web Audio JS</button>
       </div>
-      <div class="exp-panel active" id="ep-json">
-        <p style="font-size:11px;color:var(--ink3);margin-bottom:10px;line-height:1.65">Complete session as JSON — re-import any time to restore all envelopes.</p>
-        <div class="code-block" id="exp-json-code"></div>
-      </div>
-      <div class="exp-panel" id="ep-svg">
-        <p style="font-size:11px;color:var(--ink3);margin-bottom:10px;line-height:1.65">Current visualization as SVG — open in Figma, Illustrator, or any browser.</p>
+      <div class="epanel on" id="ep-json"><div class="code" id="ec-json"></div></div>
+      <div class="epanel" id="ep-svg">
         <div style="background:#fff;border:1px solid var(--rule);border-radius:4px;padding:10px;margin-bottom:10px">
-          <svg id="exp-svg-preview" viewBox="0 0 800 300" style="width:100%;max-height:150px"></svg>
+          <svg id="svg-preview" viewBox="0 0 800 300" style="width:100%;max-height:140px"></svg>
         </div>
       </div>
-      <div class="exp-panel" id="ep-css">
-        <p style="font-size:11px;color:var(--ink3);margin-bottom:10px;line-height:1.65">ADSR values as CSS custom properties for animations or JS interpolation.</p>
-        <div class="code-block" id="exp-css-code"></div>
-      </div>
-      <div class="exp-panel" id="ep-webaudio">
-        <p style="font-size:11px;color:var(--ink3);margin-bottom:10px;line-height:1.65">Drop-in Web Audio API code — wire up to your AudioContext immediately.</p>
-        <div class="code-block" id="exp-wa-code"></div>
-      </div>
+      <div class="epanel" id="ep-css"><div class="code" id="ec-css"></div></div>
+      <div class="epanel" id="ep-js"><div class="code" id="ec-js"></div></div>
     </div>
-    <div class="modal-foot">
+    <div class="mfoot">
       <button class="btn" onclick="closeModal('export-modal')">Cancel</button>
-      <button class="btn" onclick="copyCurrentExport()">Copy</button>
-      <button class="btn btn-solid" onclick="downloadCurrentExport()">↓ Download</button>
+      <button class="btn" onclick="copyExp()">Copy</button>
+      <button class="btn btn-solid" onclick="dlExp()">↓ Download</button>
     </div>
   </div>
 </div>
 
-<!-- Import Modal -->
-<div class="modal-overlay" id="import-modal">
+<!-- Import modal -->
+<div class="mover" id="import-modal">
   <div class="modal">
-    <div class="modal-head">
-      <span class="modal-title">Import JSON</span>
-      <button onclick="closeModal('import-modal')" style="border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--ink3);padding:0 4px">×</button>
+    <div class="mhead">
+      <span class="mtitle">Import JSON</span>
+      <button onclick="closeModal('import-modal')" style="border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--ink3)">×</button>
     </div>
-    <div class="modal-body">
-      <p style="font-size:11px;color:var(--ink3);margin-bottom:12px;line-height:1.65">Paste exported JSON below, or drag-and-drop a <code>.json</code> file anywhere on the window.</p>
-      <textarea id="import-ta" style="width:100%;height:180px;background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:12px;font-family:monospace;font-size:11px;color:var(--ink);outline:none;resize:vertical;line-height:1.6" placeholder='{"version":1,"envelopes":[...]}'></textarea>
-      <div id="import-err" style="font-size:11px;color:#c84040;margin-top:8px;display:none"></div>
+    <div class="mbody">
+      <p style="font-size:11px;color:var(--ink3);margin-bottom:12px;line-height:1.65">Paste exported JSON, or drag-and-drop a <code>.json</code> file onto the window.</p>
+      <textarea id="imp-ta" style="width:100%;height:160px;background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:12px;font-family:monospace;font-size:11px;color:var(--ink);outline:none;resize:vertical;line-height:1.6" placeholder='{"version":1,"envelopes":[]}'></textarea>
+      <div id="imp-err" style="font-size:11px;color:#c84040;margin-top:8px;display:none"></div>
     </div>
-    <div class="modal-foot">
+    <div class="mfoot">
       <button class="btn" onclick="closeModal('import-modal')">Cancel</button>
       <button class="btn btn-solid" onclick="doImport()">Import</button>
     </div>
@@ -221,65 +270,95 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════ STATE ═══════════════════
-const PALETTE=['#3A7BC8','#C83A7B','#3AC87B','#C4813A','#7B3AC8','#B8B030','#3AC8C0','#C84040'];
-const WAVES=['sine','sawtooth','square','triangle'];
-const PRESETS={
-  Piano:{attack:8,decay:600,sustain:40,release:300},
-  Pad:{attack:800,decay:400,sustain:80,release:1200},
-  Pluck:{attack:5,decay:180,sustain:0,release:80},
-  Organ:{attack:10,decay:0,sustain:100,release:20},
-  Kick:{attack:3,decay:180,sustain:0,release:60},
-  Strings:{attack:600,decay:200,sustain:85,release:800},
-  Bell:{attack:5,decay:900,sustain:20,release:1200},
-  Brass:{attack:120,decay:100,sustain:90,release:150},
+// ══════════════════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════════════════
+const PALETTE = ['#3A7BC8','#C83A7B','#3AC87B','#C4813A','#7B3AC8','#B8B030','#3AC8C0','#C84040'];
+const WAVES   = ['sine','sawtooth','square','triangle'];
+const PRESETS = {
+  Piano:   {attack:8,   decay:600, sustain:40, release:300, ac:-.6, dc:.8, rc:.8},
+  Pad:     {attack:800, decay:400, sustain:80, release:1200,ac:-.4, dc:.5, rc:.6},
+  Pluck:   {attack:5,   decay:180, sustain:0,  release:80,  ac:0,   dc:.7, rc:.5},
+  Organ:   {attack:10,  decay:0,   sustain:100,release:20,  ac:-.5, dc:0,  rc:0},
+  Kick:    {attack:3,   decay:180, sustain:0,  release:60,  ac:0,   dc:.9, rc:.7},
+  Strings: {attack:600, decay:200, sustain:85, release:800, ac:-.3, dc:.4, rc:.5},
+  Bell:    {attack:5,   decay:900, sustain:20, release:1200,ac:0,   dc:.7, rc:.6},
+  Brass:   {attack:120, decay:100, sustain:90, release:150, ac:-.2, dc:.3, rc:.2},
 };
+const SVG_W = 800, SVG_H = 300;
+const PAD   = {l:50, r:44, t:28, b:38};
+const CF    = 0.55; // bezier curve intensity factor
 
-let envelopes=[];
-let selectedId=null;
-let viewMode='overlay';
-let animRafs={};
-let animElapsed={};
-let audioCtx=null;
-let idCounter=0;
-let currentExpTab='json';
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let envelopes = [];
+let selectedId = null;
+let viewMode   = 'overlay';
+let snapEnabled = false;
+let snapMs      = 10;
+let audioCtx    = null;
+let animRafs    = {};
+let animElapsed = {};
+let idCounter   = 0;
+let activeExpPanel = 'ep-json';
 
-function uid(){return ++idCounter}
-function mkEnv(ov={}){
-  const idx=envelopes.length;
-  return{id:uid(),name:'Envelope '+(idx+1),color:PALETTE[idx%PALETTE.length],
-    attack:100,decay:300,sustain:65,release:500,wave:'sine',muted:false,solo:false,...ov};
+function uid() { return ++idCounter; }
+
+function mkEnv(ov = {}) {
+  const idx = envelopes.length;
+  return {
+    id: uid(), name: 'Envelope ' + (idx + 1),
+    color: PALETTE[idx % PALETTE.length],
+    attack: 100, decay: 300, sustain: 65, release: 500,
+    ac: 0, dc: .6, rc: .6,   // curve shapes: attack, decay, release
+    wave: 'sine', muted: false, solo: false,
+    ...ov
+  };
 }
 
-// ═══════════════════ CRUD ═══════════════════
-function addEnvelope(ov={}){
-  const e=mkEnv(ov);envelopes.push(e);selectEnvelope(e.id);renderEnvList();drawAll();
+// ══════════════════════════════════════════════════════
+//  CRUD
+// ══════════════════════════════════════════════════════
+function addEnvelope(ov = {}) {
+  const e = mkEnv(ov);
+  envelopes.push(e);
+  selectedId = e.id;
+  renderEnvList(); renderControls(); drawAll();
 }
-function removeEnvelope(id){
-  envelopes=envelopes.filter(e=>e.id!==id);
-  if(selectedId===id) selectedId=envelopes.length?envelopes[envelopes.length-1].id:null;
-  renderEnvList();renderControls();drawAll();
+function removeEnvelope(id) {
+  envelopes = envelopes.filter(e => e.id !== id);
+  if (selectedId === id) selectedId = envelopes.length ? envelopes[envelopes.length-1].id : null;
+  renderEnvList(); renderControls(); drawAll();
 }
-function selectEnvelope(id){selectedId=id;renderEnvList();renderControls();drawAll();}
-function getEnv(id){return envelopes.find(e=>e.id==id)}
-function getSelected(){return getEnv(selectedId)}
-function toggleMute(id){const e=getEnv(id);if(e){e.muted=!e.muted;renderEnvList();drawAll();}}
-function toggleSolo(id){const e=getEnv(id);if(e){e.solo=!e.solo;renderEnvList();drawAll();}}
-function duplicateEnv(id){
-  const s=getEnv(id);if(!s)return;
-  const c=mkEnv({...s,name:s.name+' copy',id:undefined,solo:false});
-  envelopes.push(c);selectEnvelope(c.id);renderEnvList();drawAll();
+function selectEnvelope(id) {
+  selectedId = id;
+  renderEnvList(); renderControls(); drawAll();
 }
+function getEnv(id)   { return envelopes.find(e => e.id == id); }
+function getSelected(){ return getEnv(selectedId); }
+function duplicateEnv(id) {
+  const s = getEnv(id); if (!s) return;
+  const c = mkEnv({...s, name: s.name + ' copy', id: undefined, solo: false});
+  envelopes.push(c); selectEnvelope(c.id); renderEnvList(); drawAll();
+}
+function toggleMute(id){ const e=getEnv(id); if(e){e.muted=!e.muted; renderEnvList(); drawAll();} }
+function toggleSolo(id){ const e=getEnv(id); if(e){e.solo=!e.solo;  renderEnvList(); drawAll();} }
 function isVisible(env){
-  const any=envelopes.some(e=>e.solo);
-  return any?env.solo&&!env.muted:!env.muted;
+  const any = envelopes.some(e => e.solo);
+  return any ? env.solo && !env.muted : !env.muted;
 }
 
-// ═══════════════════ ENV LIST ═══════════════════
-function renderEnvList(){
-  const list=document.getElementById('env-list');
-  if(!envelopes.length){list.innerHTML='<div style="padding:20px;text-align:center;font-size:11px;color:var(--ink3)">No envelopes yet</div>';return;}
-  list.innerHTML=envelopes.map(env=>`
+// ══════════════════════════════════════════════════════
+//  ENV LIST
+// ══════════════════════════════════════════════════════
+function renderEnvList() {
+  const list = document.getElementById('env-list');
+  if (!envelopes.length) {
+    list.innerHTML = '<div style="padding:16px;font-size:11px;color:var(--ink3);text-align:center">No envelopes yet</div>';
+    return;
+  }
+  list.innerHTML = envelopes.map(env => `
     <div class="env-row${selectedId==env.id?' selected':''}" onclick="selectEnvelope(${env.id})">
       <div class="env-swatch" style="background:${env.color};opacity:${env.muted?.3:1}"></div>
       <input class="env-name-input" value="${esc(env.name)}"
@@ -287,395 +366,670 @@ function renderEnvList(){
         onclick="event.stopPropagation()"
         onchange="getEnv(${env.id}).name=this.value;renderControls()">
       <div class="env-icons">
-        <button class="icon-btn${env.solo?' soloed':''}" title="Solo" onclick="event.stopPropagation();toggleSolo(${env.id})">◈</button>
-        <button class="icon-btn${env.muted?' muted':''}" title="Mute" onclick="event.stopPropagation();toggleMute(${env.id})">M</button>
-        <button class="icon-btn" title="Play" onclick="event.stopPropagation();playOne(${env.id})">▶</button>
-        <button class="icon-btn" title="Duplicate" onclick="event.stopPropagation();duplicateEnv(${env.id})">⎘</button>
-        <button class="icon-btn" title="Delete" style="color:#c84040" onclick="event.stopPropagation();removeEnvelope(${env.id})">✕</button>
+        <button class="icon-btn${env.solo?' solo-on':''}" title="Solo"
+          onclick="event.stopPropagation();toggleSolo(${env.id})">◈</button>
+        <button class="icon-btn${env.muted?' on':''}" title="Mute"
+          onclick="event.stopPropagation();toggleMute(${env.id})">M</button>
+        <button class="icon-btn" title="Play"
+          onclick="event.stopPropagation();playOne(${env.id})">▶</button>
+        <button class="icon-btn" title="Duplicate"
+          onclick="event.stopPropagation();duplicateEnv(${env.id})">⎘</button>
+        <button class="icon-btn" title="Delete" style="color:#c84040"
+          onclick="event.stopPropagation();removeEnvelope(${env.id})">✕</button>
       </div>
     </div>`).join('');
 }
 
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+// ══════════════════════════════════════════════════════
+//  CONTROLS — rendered ONCE, updated in-place via setParam
+// ══════════════════════════════════════════════════════
+function renderControls() {
+  const env = getSelected();
+  document.getElementById('ctrl-name').textContent = env ? env.name : '—';
+  const body = document.getElementById('ctrl-body');
+  if (!env) {
+    body.innerHTML = '<div style="color:var(--ink3);font-size:11px;padding:20px 0;text-align:center">Select an envelope</div>';
+    return;
+  }
+  const id = env.id;
+  const colorDots = PALETTE.map(c =>
+    `<div class="cdot${env.color===c?' on':''}" style="background:${c}" onclick="setColor(${id},'${c}')"></div>`).join('');
+  const waveChips = WAVES.map(w =>
+    `<button class="chip${env.wave===w?' on':''}" onclick="setWave(${id},'${w}')">${w}</button>`).join('');
+  const presetBtns = Object.keys(PRESETS).map(k =>
+    `<button class="pbtn" onclick="applyPreset(${id},'${k}')">${k}</button>`).join('');
 
-// ═══════════════════ CONTROLS ═══════════════════
-function renderControls(){
-  const env=getSelected();
-  document.getElementById('ctrl-env-name').textContent=env?env.name:'—';
-  const body=document.getElementById('ctrl-body');
-  if(!env){body.innerHTML='<div class="empty-state"><div class="empty-icon">◎</div><div class="empty-text">Select an envelope</div></div>';return;}
-  const id=env.id;
-  const colorDots=PALETTE.map(c=>`<div class="color-dot${env.color===c?' active':''}" style="background:${c}" onclick="setColor(${id},'${c}')"></div>`).join('');
-  const waveChips=WAVES.map(w=>`<button class="chip${env.wave===w?' active':''}" onclick="setWave(${id},'${w}')">${w}</button>`).join('');
-  const presetBtns=Object.keys(PRESETS).map(k=>`<button class="preset-btn" onclick="applyPreset(${id},'${k}')">${k}</button>`).join('');
-  const totalMs=env.attack+env.decay+env.release;
-  const aspeed=env.attack<50?'Percussive':env.attack<300?'Medium':'Slow';
-  const rtail=env.release<100?'Tight':env.release<600?'Natural':'Long';
-  body.innerHTML=`
-    <div style="margin-bottom:16px">
-      <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px">Colour</div>
+  body.innerHTML = `
+    <div style="margin-bottom:13px">
+      <div class="sec-lbl">Colour</div>
       <div class="color-row">${colorDots}</div>
     </div>
-    <div class="divider"></div>
-    ${mkSlider(id,'attack',env.attack,'Attack','time',2000)}
-    ${mkSlider(id,'decay',env.decay,'Decay','time',2000)}
-    <div class="divider"></div>
-    ${mkSliderSustain(id,env.sustain,env.color)}
-    ${mkSlider(id,'release',env.release,'Release','time',3000)}
-    <div class="divider"></div>
-    <div style="margin-bottom:16px">
-      <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px">Waveform</div>
-      <div class="chip-group">${waveChips}</div>
-    </div>
-    <div class="divider"></div>
-    <div style="margin-bottom:16px">
-      <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px">At a Glance</div>
-      <div class="info-chips">
-        <div class="info-chip">Total <span>${fmtMs(totalMs)}</span></div>
-        <div class="info-chip">Drop <span>${100-env.sustain}%</span></div>
-        <div class="info-chip">Attack <span>${aspeed}</span></div>
-        <div class="info-chip">Release <span>${rtail}</span></div>
+    <div class="hr"></div>
+
+    <!-- ATTACK -->
+    <div class="sl-g">
+      <div class="sl-head">
+        <span class="sl-label" style="color:${env.color}">Attack</span>
+        <span class="sl-unit">time</span>
+        <span class="sl-val" id="sv-attack-${id}">${fmtMs(env.attack)}</span>
+      </div>
+      <div class="sl-track">
+        <div class="sl-fill" id="sf-attack-${id}" style="width:${env.attack/2000*100}%;background:${env.color};opacity:.45"></div>
+        <input type="range" min="1" max="2000" step="1" value="${env.attack}"
+          oninput="setParam(${id},'attack',+this.value)">
       </div>
     </div>
-    <div class="divider"></div>
-    <div>
-      <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px">Load Preset</div>
-      <div class="preset-grid">${presetBtns}</div>
-    </div>`;
+
+    <!-- DECAY -->
+    <div class="sl-g">
+      <div class="sl-head">
+        <span class="sl-label" style="color:${env.color}">Decay</span>
+        <span class="sl-unit">time</span>
+        <span class="sl-val" id="sv-decay-${id}">${fmtMs(env.decay)}</span>
+      </div>
+      <div class="sl-track">
+        <div class="sl-fill" id="sf-decay-${id}" style="width:${env.decay/2000*100}%;background:${env.color};opacity:.45"></div>
+        <input type="range" min="1" max="2000" step="1" value="${env.decay}"
+          oninput="setParam(${id},'decay',+this.value)">
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <!-- SUSTAIN -->
+    <div class="sl-g">
+      <div class="sl-head">
+        <span class="sl-label" style="color:${env.color}">Sustain</span>
+        <span class="sl-unit">level</span>
+        <span class="sl-val" id="sv-sustain-${id}">${env.sustain}%</span>
+      </div>
+      <div class="sl-track">
+        <div class="sl-fill" id="sf-sustain-${id}" style="width:${env.sustain}%;background:${env.color};opacity:.45"></div>
+        <input type="range" min="0" max="100" step="1" value="${env.sustain}"
+          oninput="setParam(${id},'sustain',+this.value)">
+      </div>
+    </div>
+
+    <!-- RELEASE -->
+    <div class="sl-g">
+      <div class="sl-head">
+        <span class="sl-label" style="color:${env.color}">Release</span>
+        <span class="sl-unit">time</span>
+        <span class="sl-val" id="sv-release-${id}">${fmtMs(env.release)}</span>
+      </div>
+      <div class="sl-track">
+        <div class="sl-fill" id="sf-release-${id}" style="width:${env.release/3000*100}%;background:${env.color};opacity:.45"></div>
+        <input type="range" min="1" max="3000" step="1" value="${env.release}"
+          oninput="setParam(${id},'release',+this.value)">
+      </div>
+    </div>
+
+    <div class="hr sec-block"></div>
+
+    <div class="sec-block" style="margin-bottom:13px">
+      <div class="sec-lbl">Waveform</div>
+      <div class="chip-row">${waveChips}</div>
+    </div>
+
+    <div class="hr sec-block"></div>
+
+    <div class="sec-block" style="margin-bottom:13px">
+      <div class="sec-lbl">At a Glance</div>
+      <div class="glance" id="glance-${id}">${glanceHTML(env)}</div>
+    </div>
+
+    <div class="hr sec-block"></div>
+
+    <div class="sec-block">
+      <div class="sec-lbl">Load Preset</div>
+      <div class="preset-row">${presetBtns}</div>
+    </div>
+  `;
 }
 
-function mkSlider(id,key,val,label,unit,max){
-  const fillW=(val/max*100).toFixed(1);
-  const color=getEnv(id)?getEnv(id).color:'var(--ink)';
-  return`<div class="sl-group">
-    <div class="sl-head">
-      <span class="sl-label" style="color:${color}">${label}</span>
-      <span class="sl-unit">${unit}</span>
-      <span class="sl-val" id="sv-${key}-${id}">${fmtMs(val)}</span>
-    </div>
-    <div class="sl-track">
-      <div class="sl-fill" id="sf-${key}-${id}" style="width:${fillW}%;background:${color};opacity:.45"></div>
-      <input type="range" min="1" max="${max}" step="1" value="${val}" oninput="setParam(${id},'${key}',+this.value)">
-    </div>
-  </div>`;
-}
-function mkSliderSustain(id,val,color){
-  return`<div class="sl-group">
-    <div class="sl-head">
-      <span class="sl-label" style="color:${color}">Sustain</span>
-      <span class="sl-unit">level</span>
-      <span class="sl-val" id="sv-sustain-${id}">${val}%</span>
-    </div>
-    <div class="sl-track">
-      <div class="sl-fill" id="sf-sustain-${id}" style="width:${val}%;background:${color};opacity:.45"></div>
-      <input type="range" min="0" max="100" step="1" value="${val}" oninput="setParam(${id},'sustain',+this.value)">
-    </div>
-  </div>`;
+function glanceHTML(env) {
+  const totalMs = env.attack + env.decay + env.release;
+  const aspeed  = env.attack < 50 ? 'Percussive' : env.attack < 300 ? 'Medium' : 'Slow';
+  const rtail   = env.release < 100 ? 'Tight' : env.release < 600 ? 'Natural' : 'Long';
+  return `<div class="gc">Total <span>${fmtMs(totalMs)}</span></div>
+    <div class="gc">Drop <span>${100-env.sustain}%</span></div>
+    <div class="gc">Attack <span>${aspeed}</span></div>
+    <div class="gc">Release <span>${rtail}</span></div>`;
 }
 
-function setParam(id,key,val){
-  const env=getEnv(id);if(!env)return;
-  env[key]=val;
-  const sv=document.getElementById(`sv-${key}-${id}`);
-  const sf=document.getElementById(`sf-${key}-${id}`);
-  if(sv) sv.textContent=key==='sustain'?val+'%':fmtMs(val);
-  if(sf){const max=key==='release'?3000:key==='sustain'?100:2000;sf.style.width=(val/max*100)+'%';}
-  renderControls();drawAll();
+// ─── KEY FIX: setParam updates DOM in-place — never recreates the control panel ───
+function setParam(id, key, val) {
+  const env = getEnv(id); if (!env) return;
+  env[key] = +val;
+  const maxes = {attack:2000, decay:2000, sustain:100, release:3000};
+  const sv = document.getElementById(`sv-${key}-${id}`);
+  const sf = document.getElementById(`sf-${key}-${id}`);
+  if (sv) sv.textContent = key === 'sustain' ? (+val)+'%' : fmtMs(+val);
+  if (sf) sf.style.width = (+val / (maxes[key]||100) * 100) + '%';
+  const ga = document.getElementById(`glance-${id}`);
+  if (ga) ga.innerHTML = glanceHTML(env);
+  drawAll();
 }
-function setColor(id,col){const e=getEnv(id);if(e){e.color=col;renderControls();renderEnvList();drawAll();}}
-function setWave(id,w){const e=getEnv(id);if(e){e.wave=w;renderControls();}}
-function applyPreset(id,name){const env=getEnv(id);const pr=PRESETS[name];if(!env||!pr)return;Object.assign(env,pr);renderControls();drawAll();}
-function resetSelected(){const e=getSelected();if(!e)return;Object.assign(e,{attack:100,decay:300,sustain:65,release:500});renderControls();drawAll();}
+function setColor(id, col) { const e=getEnv(id); if(e){e.color=col; renderControls(); renderEnvList(); drawAll();} }
+function setWave(id, w)    { const e=getEnv(id); if(e){e.wave=w; renderControls();} }
+function applyPreset(id, name) {
+  const env=getEnv(id), pr=PRESETS[name]; if(!env||!pr) return;
+  Object.assign(env, pr); renderControls(); drawAll();
+}
+function resetSelected() {
+  const e=getSelected(); if(!e) return;
+  Object.assign(e,{attack:100,decay:300,sustain:65,release:500,ac:0,dc:.6,rc:.6});
+  renderControls(); drawAll();
+}
 
-// ═══════════════════ DRAWING ═══════════════════
-const SVG_W=800,SVG_H=300;
-const PAD={l:50,r:42,t:28,b:38};
-
-function drawAll(playStates={}){
-  const svg=document.getElementById('env-svg');
-  svg.innerHTML='';
-  const ns='http://www.w3.org/2000/svg';
-  const mk=(tag,a)=>{const e=document.createElementNS(ns,tag);for(const[k,v] of Object.entries(a))e.setAttribute(k,v);return e;};
-  const drawn=envelopes.filter(isVisible);
-  if(!drawn.length){
-    const t=mk('text',{x:SVG_W/2,y:SVG_H/2,'text-anchor':'middle',fill:'#9A9088','font-size':12,'font-family':'DM Sans,sans-serif'});
-    t.textContent='Add an envelope to get started';svg.appendChild(t);return;
+// ══════════════════════════════════════════════════════
+//  DRAWING
+// ══════════════════════════════════════════════════════
+function drawAll(playStates = {}) {
+  const svg = document.getElementById('env-svg');
+  svg.innerHTML = '';
+  const ns = 'http://www.w3.org/2000/svg';
+  const mk = (tag, a) => {
+    const e = document.createElementNS(ns, tag);
+    for (const [k,v] of Object.entries(a)) e.setAttribute(k, v);
+    return e;
+  };
+  const drawn = envelopes.filter(isVisible);
+  if (!drawn.length) {
+    const t = mk('text',{x:SVG_W/2,y:SVG_H/2,'text-anchor':'middle',fill:'#9A9088','font-size':12,'font-family':'DM Sans,sans-serif'});
+    t.textContent = 'Add an envelope to get started'; svg.appendChild(t); return;
   }
-  if(viewMode==='stack'&&drawn.length>1) drawStacked(svg,mk,drawn,playStates);
-  else drawOverlay(svg,mk,drawn,playStates);
+  if (viewMode === 'stack' && drawn.length > 1) drawStacked(svg, mk, drawn, playStates);
+  else drawOverlay(svg, mk, drawn, playStates);
 }
 
-function globalTotal(envs){
-  return Math.max(...envs.map(e=>e.attack+e.decay+e.release+Math.max(e.attack*.5,120)),200);
+function globalTotal(envs) {
+  return Math.max(...envs.map(e => e.attack+e.decay+e.release+Math.max(e.attack*.5,120)), 300);
 }
 
-function envPts(env,total){
-  const uw=SVG_W-PAD.l-PAD.r,uh=SVG_H-PAD.t-PAD.b;
-  const mx=ms=>PAD.l+(ms/total)*uw;
-  const ay=pct=>PAD.t+uh*(1-pct/100);
-  const sd=total*0.28;
-  const t1=env.attack,t2=t1+env.decay,t3=t2+sd,t4=t3+env.release;
-  return{total,sd,mx,ay,
-    p0:{x:mx(0),y:ay(0)},
-    p1:{x:mx(t1),y:ay(100),t:t1},
-    p2:{x:mx(t2),y:ay(env.sustain),t:t2},
-    p3:{x:mx(t3),y:ay(env.sustain),t:t3},
-    p4:{x:mx(t4),y:ay(0),t:t4}};
+// Compute key SVG points for an envelope
+function envPts(env, total) {
+  const uw = SVG_W - PAD.l - PAD.r;
+  const uh = SVG_H - PAD.t - PAD.b;
+  const mx = ms => PAD.l + (ms / total) * uw;
+  const ay = pct => PAD.t + uh * (1 - pct / 100);
+  const sd = total * 0.28;           // sustain hold duration
+  const t1=env.attack, t2=t1+env.decay, t3=t2+sd, t4=t3+env.release;
+  return { total, sd, mx, ay, uw, uh,
+    p0: {x:mx(0),  y:ay(0)},
+    p1: {x:mx(t1), y:ay(100), t:t1},
+    p2: {x:mx(t2), y:ay(env.sustain), t:t2},
+    p3: {x:mx(t3), y:ay(env.sustain), t:t3},
+    p4: {x:mx(t4), y:ay(0), t:t4}
+  };
 }
 
-function cpathStr(p){
-  return`M${p.p0.x},${p.p0.y}C${p.p0.x+(p.p1.x-p.p0.x)*.5},${p.p0.y} ${p.p1.x},${p.p1.y} ${p.p1.x},${p.p1.y}C${p.p1.x+(p.p2.x-p.p1.x)*.4},${p.p1.y} ${p.p2.x},${p.p2.y} ${p.p2.x},${p.p2.y}L${p.p3.x},${p.p3.y}C${p.p3.x+(p.p4.x-p.p3.x)*.5},${p.p3.y} ${p.p4.x},${p.p4.y} ${p.p4.x},${p.p4.y}`;
-}
-function fpathStr(p){
-  return cpathStr(p)+`L${p.p4.x},${SVG_H-PAD.b}L${p.p0.x},${SVG_H-PAD.b}Z`;
+// Quadratic bezier segment: shape -1…1 bends the curve
+// shape=0 → straight line; +1 → exp/convex; -1 → log/concave
+function qseg(x0, y0, x1, y1, shape) {
+  const cpX = (x0 + x1) / 2;
+  const amp  = Math.abs(y1 - y0);
+  if (amp < 1 || Math.abs(shape) < 0.02) return `L${x1.toFixed(1)},${y1.toFixed(1)}`;
+  const cpY  = (y0 + y1) / 2 + shape * amp * CF;
+  return `Q${cpX.toFixed(1)},${cpY.toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`;
 }
 
-function drawGrid(svg,mk){
-  for(let i=0;i<=4;i++){
-    const y=PAD.t+(SVG_H-PAD.t-PAD.b)*(1-i/4);
-    svg.appendChild(mk('line',{x1:PAD.l,y1:y,x2:SVG_W-PAD.r,y2:y,stroke:'#DDD6CB','stroke-width':.7,'stroke-dasharray':i===0?'none':'3,5'}));
-    if(i>0){const t=mk('text',{x:PAD.l-6,y:y+3.5,'text-anchor':'end',fill:'#9A9088','font-size':9,'font-family':'DM Sans,sans-serif'});t.textContent=(i*25)+'%';svg.appendChild(t);}
+function curvePath(p, env) {
+  return [
+    `M${p.p0.x.toFixed(1)},${p.p0.y.toFixed(1)}`,
+    qseg(p.p0.x, p.p0.y, p.p1.x, p.p1.y, env.ac),   // attack
+    qseg(p.p1.x, p.p1.y, p.p2.x, p.p2.y, env.dc),   // decay
+    `L${p.p3.x.toFixed(1)},${p.p3.y.toFixed(1)}`,    // sustain hold
+    qseg(p.p3.x, p.p3.y, p.p4.x, p.p4.y, env.rc),   // release
+  ].join('');
+}
+
+function fillPath(p, env) {
+  return curvePath(p, env) +
+    `L${p.p4.x.toFixed(1)},${(SVG_H-PAD.b).toFixed(1)}` +
+    `L${p.p0.x.toFixed(1)},${(SVG_H-PAD.b).toFixed(1)}Z`;
+}
+
+// CP position of a curved segment (for drawing the diamond handle)
+function cpOf(x0, y0, x1, y1, shape) {
+  return {
+    x: (x0+x1)/2,
+    y: (y0+y1)/2 + shape * Math.abs(y1-y0) * CF
+  };
+}
+
+// Interpolate Y at time t (used for playhead dot)
+function interpY(t, p, env) {
+  // approximate: use linear interp (close enough for visual purposes)
+  if (t <= p.p1.t) { const r=t/Math.max(p.p1.t,1); return p.p0.y+(p.p1.y-p.p0.y)*r; }
+  if (t <= p.p2.t) { const r=(t-p.p1.t)/Math.max(p.p2.t-p.p1.t,1); return p.p1.y+(p.p2.y-p.p1.y)*r; }
+  if (t <= p.p3.t) return p.p2.y;
+  const r=(t-p.p3.t)/Math.max(p.p4.t-p.p3.t,1); return p.p3.y+(p.p4.y-p.p3.y)*r;
+}
+
+function drawGrid(svg, mk) {
+  for (let i = 0; i <= 4; i++) {
+    const y = PAD.t + (SVG_H-PAD.t-PAD.b) * (1-i/4);
+    svg.appendChild(mk('line',{x1:PAD.l,y1:y,x2:SVG_W-PAD.r,y2:y,
+      stroke:'#DDD6CB','stroke-width':.7,'stroke-dasharray':i===0?'none':'3,5'}));
+    if (i > 0) {
+      const t = mk('text',{x:PAD.l-6,y:y+3.5,'text-anchor':'end',fill:'#9A9088','font-size':9,'font-family':'DM Sans,sans-serif'});
+      t.textContent = (i*25)+'%'; svg.appendChild(t);
+    }
   }
   svg.appendChild(mk('line',{x1:PAD.l,y1:SVG_H-PAD.b,x2:SVG_W-PAD.r,y2:SVG_H-PAD.b,stroke:'#C8C0B4','stroke-width':1}));
 }
 
-function interpY(t,p){
-  if(t<=p.p1.t){const r=t/Math.max(p.p1.t,1);return p.p0.y+(p.p1.y-p.p0.y)*r;}
-  if(t<=p.p2.t){const r=(t-p.p1.t)/Math.max(p.p2.t-p.p1.t,1);return p.p1.y+(p.p2.y-p.p1.y)*r;}
-  if(t<=p.p3.t)return p.p2.y;
-  const r=(t-p.p3.t)/Math.max(p.p4.t-p.p3.t,1);return p.p3.y+(p.p4.y-p.p3.y)*r;
-}
+function drawOverlay(svg, mk, drawn, playStates) {
+  drawGrid(svg, mk);
+  const total = globalTotal(drawn);
 
-function drawOverlay(svg,mk,drawn,playStates){
-  drawGrid(svg,mk);
-  const total=globalTotal(drawn);
-  // fills behind
-  drawn.forEach(env=>{
-    const p=envPts(env,total);
-    const gid='g'+env.id;
-    const defs=mk('defs',{});const lg=mk('linearGradient',{id:gid,x1:'0',y1:'0',x2:'0',y2:'1'});
-    lg.append(Object.assign(mk('stop',{'stop-color':env.color,'stop-opacity':'.13'}),{}).setAttribute('offset','0%')||mk('stop',{offset:'0%','stop-color':env.color,'stop-opacity':'.13'}));
+  // fills (back to front)
+  drawn.forEach(env => {
+    const p   = envPts(env, total);
+    const gid = 'g'+env.id;
+    const defs = mk('defs',{}); const lg = mk('linearGradient',{id:gid,x1:'0',y1:'0',x2:'0',y2:'1'});
+    lg.append(mk('stop',{offset:'0%','stop-color':env.color,'stop-opacity':'.13'}));
     lg.append(mk('stop',{offset:'100%','stop-color':env.color,'stop-opacity':'.02'}));
-    defs.append(lg);svg.appendChild(defs);
-    svg.appendChild(mk('path',{d:fpathStr(p),fill:`url(#${gid})`}));
+    defs.append(lg); svg.appendChild(defs);
+    svg.appendChild(mk('path',{d:fillPath(p,env),fill:`url(#${gid})`}));
   });
-  // strokes + handles
-  drawn.forEach(env=>{
-    const p=envPts(env,total);
-    const isSel=env.id===selectedId;
-    svg.appendChild(mk('path',{d:cpathStr(p),fill:'none',stroke:env.color,'stroke-width':isSel?2.5:1.5,'stroke-linecap':'round','stroke-linejoin':'round',opacity:isSel?1:.6}));
+
+  // strokes, labels, handles
+  drawn.forEach(env => {
+    const p = envPts(env, total);
+    const isSel = env.id === selectedId;
+    svg.appendChild(mk('path',{d:curvePath(p,env),fill:'none',stroke:env.color,
+      'stroke-width':isSel?2.5:1.5,'stroke-linecap':'round','stroke-linejoin':'round',
+      opacity:isSel?1:.6}));
+
     // playhead
-    const pt=playStates[env.id];
-    if(pt!==undefined){
-      const px=p.mx(pt);
+    const pt = playStates[env.id];
+    if (pt !== undefined) {
+      const px = p.mx(pt);
       svg.appendChild(mk('line',{x1:px,y1:PAD.t,x2:px,y2:SVG_H-PAD.b,stroke:env.color,'stroke-width':1.5,opacity:.8}));
-      svg.appendChild(mk('circle',{cx:px,cy:interpY(pt,p),r:5,fill:env.color,stroke:'white','stroke-width':2}));
+      svg.appendChild(mk('circle',{cx:px,cy:interpY(pt,p,env),r:5,fill:env.color,stroke:'white','stroke-width':2}));
     }
-    // label
-    const lbl=mk('text',{x:p.p4.x+6,y:p.p4.y+4,fill:env.color,'font-size':10,'font-family':'DM Sans,sans-serif'});
-    lbl.textContent=env.name.length>14?env.name.slice(0,13)+'…':env.name;svg.appendChild(lbl);
-    if(isSel) drawHandles(svg,mk,env,p,total);
+
+    // name label
+    const lbl = mk('text',{x:p.p4.x+6,y:p.p4.y+4,fill:env.color,'font-size':10,'font-family':'DM Sans,sans-serif'});
+    lbl.textContent = env.name.length>14 ? env.name.slice(0,13)+'…' : env.name;
+    svg.appendChild(lbl);
+
+    if (isSel) {
+      drawADSRHandles(svg, mk, env, p, total);
+      drawCurveHandles(svg, mk, env, p);
+    }
   });
 }
 
-function drawStacked(svg,mk,drawn,playStates){
-  const rowH=Math.floor((SVG_H-8)/drawn.length);
-  drawn.forEach((env,i)=>{
-    const y0=4+i*rowH;
-    const t={l:PAD.l,r:PAD.r+58,t:y0+8,b:y0+rowH-12};
-    const uw=SVG_W-t.l-t.r,uh=t.b-t.t;
-    const tot=env.attack+env.decay+env.release+Math.max(env.attack*.5,120);
-    const mx=ms=>t.l+(ms/tot)*uw;
-    const ay=pct=>t.t+uh*(1-pct/100);
-    const t1=env.attack,t2=t1+env.decay,t3=t2+tot*0.28,t4=t3+env.release;
-    const pts={p0:{x:mx(0),y:ay(0)},p1:{x:mx(t1),y:ay(100),t:t1},p2:{x:mx(t2),y:ay(env.sustain),t:t2},p3:{x:mx(t3),y:ay(env.sustain),t:t3},p4:{x:mx(t4),y:ay(0),t:t4}};
-    if(i>0) svg.appendChild(mk('line',{x1:0,y1:y0,x2:SVG_W,y2:y0,stroke:'#DDD6CB','stroke-width':.7}));
-    if(env.id===selectedId) svg.appendChild(mk('rect',{x:0,y:y0,width:SVG_W,height:rowH-2,fill:'rgba(196,129,58,.04)'}));
+function drawStacked(svg, mk, drawn, playStates) {
+  const rowH = Math.floor((SVG_H-8)/drawn.length);
+  drawn.forEach((env, i) => {
+    const y0  = 4 + i*rowH;
+    const t   = {l:PAD.l, r:PAD.r+58, t:y0+8, b:y0+rowH-12};
+    const uw  = SVG_W-t.l-t.r, uh = t.b-t.t;
+    const tot = env.attack+env.decay+env.release+Math.max(env.attack*.5,120);
+    const mx  = ms => t.l+(ms/tot)*uw;
+    const ay  = pct => t.t+uh*(1-pct/100);
+    const t1=env.attack, t2=t1+env.decay, t3=t2+tot*0.28, t4=t3+env.release;
+    const pts = {p0:{x:mx(0),y:ay(0)},p1:{x:mx(t1),y:ay(100),t:t1},
+      p2:{x:mx(t2),y:ay(env.sustain),t:t2},p3:{x:mx(t3),y:ay(env.sustain),t:t3},
+      p4:{x:mx(t4),y:ay(0),t:t4}};
+    if (i>0) svg.appendChild(mk('line',{x1:0,y1:y0,x2:SVG_W,y2:y0,stroke:'#DDD6CB','stroke-width':.7}));
+    if (env.id===selectedId) svg.appendChild(mk('rect',{x:0,y:y0,width:SVG_W,height:rowH-2,fill:'rgba(196,129,58,.04)'}));
     svg.appendChild(mk('line',{x1:t.l,y1:t.b,x2:SVG_W-t.r,y2:t.b,stroke:'#DDD6CB','stroke-width':.8}));
-    const cp=`M${pts.p0.x},${pts.p0.y}C${pts.p0.x+(pts.p1.x-pts.p0.x)*.5},${pts.p0.y} ${pts.p1.x},${pts.p1.y} ${pts.p1.x},${pts.p1.y}C${pts.p1.x+(pts.p2.x-pts.p1.x)*.4},${pts.p1.y} ${pts.p2.x},${pts.p2.y} ${pts.p2.x},${pts.p2.y}L${pts.p3.x},${pts.p3.y}C${pts.p3.x+(pts.p4.x-pts.p3.x)*.5},${pts.p3.y} ${pts.p4.x},${pts.p4.y} ${pts.p4.x},${pts.p4.y}`;
-    svg.appendChild(mk('path',{d:cp+`L${pts.p4.x},${t.b}L${pts.p0.x},${t.b}Z`,fill:env.color,opacity:'.08'}));
+    const cp = [
+      `M${pts.p0.x},${pts.p0.y}`,
+      qseg(pts.p0.x,pts.p0.y,pts.p1.x,pts.p1.y,env.ac),
+      qseg(pts.p1.x,pts.p1.y,pts.p2.x,pts.p2.y,env.dc),
+      `L${pts.p3.x},${pts.p3.y}`,
+      qseg(pts.p3.x,pts.p3.y,pts.p4.x,pts.p4.y,env.rc),
+    ].join('');
+    svg.appendChild(mk('path',{d:cp+`L${pts.p4.x},${t.b}L${pts.p0.x},${t.b}Z`,fill:env.color,opacity:'.09'}));
     svg.appendChild(mk('path',{d:cp,fill:'none',stroke:env.color,'stroke-width':2,'stroke-linecap':'round'}));
     const nl=mk('text',{x:SVG_W-t.r+8,y:t.t+uh/2+4,fill:env.color,'font-size':10,'font-family':'DM Sans,sans-serif'});
-    nl.textContent=env.name.length>10?env.name.slice(0,9)+'…':env.name;svg.appendChild(nl);
+    nl.textContent=env.name.length>10?env.name.slice(0,9)+'…':env.name; svg.appendChild(nl);
     const si=mk('text',{x:t.l,y:t.b+12,fill:'#9A9088','font-size':8,'font-family':'DM Sans,sans-serif'});
-    si.textContent=`A:${fmtMs(env.attack)}  D:${fmtMs(env.decay)}  S:${env.sustain}%  R:${fmtMs(env.release)}`;svg.appendChild(si);
+    si.textContent=`A:${fmtMs(env.attack)}  D:${fmtMs(env.decay)}  S:${env.sustain}%  R:${fmtMs(env.release)}`; svg.appendChild(si);
     const pt=playStates[env.id];
-    if(pt!==undefined){
-      const phx=mx(pt);svg.appendChild(mk('line',{x1:phx,y1:t.t,x2:phx,y2:t.b,stroke:env.color,'stroke-width':1.5,opacity:.8}));
-    }
+    if(pt!==undefined){const phx=mx(pt);svg.appendChild(mk('line',{x1:phx,y1:t.t,x2:phx,y2:t.b,stroke:env.color,'stroke-width':1.5,opacity:.8}));}
   });
 }
 
-function drawHandles(svg,mk,env,p,total){
-  const uw=SVG_W-PAD.l-PAD.r,uh=SVG_H-PAD.t-PAD.b;
-  [{pt:p.p1,hid:'hp'},{pt:p.p2,hid:'hs'},{pt:p.p3,hid:'hse'}].forEach(({pt,hid})=>{
-    const ns='http://www.w3.org/2000/svg';
-    const g=document.createElementNS(ns,'g');g.setAttribute('style','cursor:grab');
-    const c1=document.createElementNS(ns,'circle');c1.setAttribute('cx',pt.x);c1.setAttribute('cy',pt.y);c1.setAttribute('r',14);c1.setAttribute('fill','transparent');
-    const c2=document.createElementNS(ns,'circle');c2.setAttribute('cx',pt.x);c2.setAttribute('cy',pt.y);c2.setAttribute('r',6);c2.setAttribute('fill','white');c2.setAttribute('stroke',env.color);c2.setAttribute('stroke-width',2);
-    const c3=document.createElementNS(ns,'circle');c3.setAttribute('cx',pt.x);c3.setAttribute('cy',pt.y);c3.setAttribute('r',2.5);c3.setAttribute('fill',env.color);
-    g.append(c1,c2,c3);svg.appendChild(g);
-    let down=false;
-    g.addEventListener('mousedown',e=>{down=true;e.stopPropagation();document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);});
-    const up=()=>{down=false;document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);};
-    const mv=e=>{
-      if(!down)return;
-      const rect=document.getElementById('env-svg').getBoundingClientRect();
-      const sx=(e.clientX-rect.left)*(SVG_W/rect.width);
-      const sy=(e.clientY-rect.top)*(SVG_H/rect.height);
-      const ms=Math.max(0,((sx-PAD.l)/uw)*total);
-      if(hid==='hp'){env.attack=Math.max(1,Math.min(ms,2000));}
-      else if(hid==='hs'){env.decay=Math.max(1,Math.min(ms-env.attack,2000));env.sustain=Math.max(0,Math.min(100,Math.round(100-((sy-PAD.t)/uh)*100)));}
-      renderControls();drawAll();
+// ══════════════════════════════════════════════════════
+//  ADSR POINT HANDLES (circles at p1, p2, p3)
+// ══════════════════════════════════════════════════════
+function drawADSRHandles(svg, mk, env, p, total) {
+  [
+    {pt:p.p1, type:'peak'},
+    {pt:p.p2, type:'suspt'},
+    {pt:p.p3, type:'susend'},
+  ].forEach(({pt, type}) => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.style.cursor = 'grab';
+    const c1 = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c1.setAttribute('cx',pt.x); c1.setAttribute('cy',pt.y); c1.setAttribute('r',16); c1.setAttribute('fill','transparent');
+    const c2 = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c2.setAttribute('cx',pt.x); c2.setAttribute('cy',pt.y); c2.setAttribute('r',7); c2.setAttribute('fill','white'); c2.setAttribute('stroke',env.color); c2.setAttribute('stroke-width',2);
+    const c3 = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c3.setAttribute('cx',pt.x); c3.setAttribute('cy',pt.y); c3.setAttribute('r',3); c3.setAttribute('fill',env.color);
+    g.append(c1,c2,c3); svg.appendChild(g);
+
+    let down = false;
+    const startDrag = ev => {
+      down = true; ev.stopPropagation();
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup',   stopDrag);
+      document.addEventListener('touchmove', onMove, {passive:false});
+      document.addEventListener('touchend',  stopDrag);
     };
+    const stopDrag = () => {
+      down = false;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   stopDrag);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend',  stopDrag);
+    };
+    const onMove = ev => {
+      if (!down) return;
+      ev.preventDefault();
+      const c = svgCoords(ev); if (!c) return;
+      const ms  = Math.max(0, ((c.x - PAD.l) / p.uw) * total);
+      const pct = Math.max(0, Math.min(100, 100 - ((c.y - PAD.t) / p.uh) * 100));
+      const snap = v => snapEnabled ? Math.round(v/snapMs)*snapMs : v;
+      const snapP= v => snapEnabled ? Math.round(v/5)*5 : v;
+
+      if (type === 'peak') {
+        env.attack = Math.max(1, Math.round(snap(ms)));
+        // Sync slider
+        syncSlider('attack', env);
+      } else if (type === 'suspt') {
+        env.decay   = Math.max(1, Math.round(snap(ms - env.attack)));
+        env.sustain = Math.round(snapP(pct));
+        syncSlider('decay',   env);
+        syncSlider('sustain', env);
+      }
+      // susend: sustain hold visual only, no param change needed
+      renderControls(); drawAll();
+    };
+    g.addEventListener('mousedown',  startDrag);
+    g.addEventListener('touchstart', startDrag, {passive:false});
   });
 }
 
-// ═══════════════════ VIEW ═══════════════════
-function setView(v){
-  viewMode=v;
-  document.getElementById('vt-overlay').classList.toggle('active',v==='overlay');
-  document.getElementById('vt-stack').classList.toggle('active',v==='stack');
+// ══════════════════════════════════════════════════════
+//  BEZIER CURVE SHAPE HANDLES (diamonds at segment midpoints)
+// ══════════════════════════════════════════════════════
+function drawCurveHandles(svg, mk, env, p) {
+  const segs = [
+    {x0:p.p0.x,y0:p.p0.y,x1:p.p1.x,y1:p.p1.y, curveKey:'ac', label:'A~'},
+    {x0:p.p1.x,y0:p.p1.y,x1:p.p2.x,y1:p.p2.y, curveKey:'dc', label:'D~'},
+    {x0:p.p3.x,y0:p.p3.y,x1:p.p4.x,y1:p.p4.y, curveKey:'rc', label:'R~'},
+  ];
+  segs.forEach(({x0,y0,x1,y1,curveKey,label}) => {
+    if (Math.abs(y1-y0) < 4) return; // skip flat segments
+    const cp = cpOf(x0,y0,x1,y1,env[curveKey]);
+    const cx = cp.x, cy = cp.y;
+    const s  = 5; // half-size of diamond
+    const g  = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.style.cursor = 'ns-resize';
+
+    // diamond shape
+    const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    poly.setAttribute('points', `${cx},${cy-s} ${cx+s},${cy} ${cx},${cy+s} ${cx-s},${cy}`);
+    poly.setAttribute('fill','white'); poly.setAttribute('stroke',env.color); poly.setAttribute('stroke-width',1.8);
+
+    // transparent hit area
+    const hit = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    hit.setAttribute('cx',cx); hit.setAttribute('cy',cy); hit.setAttribute('r',12); hit.setAttribute('fill','transparent');
+
+    // subtle label
+    const lbl = document.createElementNS('http://www.w3.org/2000/svg','text');
+    lbl.setAttribute('x',cx+8); lbl.setAttribute('y',cy-6);
+    lbl.setAttribute('fill',env.color); lbl.setAttribute('font-size',8);
+    lbl.setAttribute('font-family','DM Sans,sans-serif'); lbl.setAttribute('opacity','.7');
+    lbl.textContent = label;
+
+    g.append(hit, poly, lbl); svg.appendChild(g);
+
+    let down = false;
+    const midY   = (y0+y1)/2;
+    const amp    = Math.abs(y1-y0);
+
+    const startDrag = ev => {
+      down = true; ev.stopPropagation();
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup',   stopDrag);
+      document.addEventListener('touchmove', onMove, {passive:false});
+      document.addEventListener('touchend',  stopDrag);
+    };
+    const stopDrag = () => {
+      down = false;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   stopDrag);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend',  stopDrag);
+    };
+    const onMove = ev => {
+      if (!down) return; ev.preventDefault();
+      const c = svgCoords(ev); if (!c) return;
+      // derive shape from Y drag: invert the cpOf formula
+      const newShape = Math.max(-1, Math.min(1, (c.y - midY) / (amp * CF)));
+      env[curveKey] = Math.round(newShape * 100) / 100;
+      drawAll();
+    };
+    g.addEventListener('mousedown',  startDrag);
+    g.addEventListener('touchstart', startDrag, {passive:false});
+  });
+}
+
+// Sync slider element value after handle drag (without calling renderControls)
+function syncSlider(key, env) {
+  const id = env.id;
+  const sv = document.getElementById(`sv-${key}-${id}`);
+  const sf = document.getElementById(`sf-${key}-${id}`);
+  const inp = document.querySelector(`[oninput="setParam(${id},'${key}',+this.value)"]`);
+  const maxes = {attack:2000,decay:2000,sustain:100,release:3000};
+  if (sv)  sv.textContent  = key === 'sustain' ? env[key]+'%' : fmtMs(env[key]);
+  if (sf)  sf.style.width  = (env[key] / (maxes[key]||100) * 100) + '%';
+  if (inp) inp.value = env[key];
+  const ga = document.getElementById(`glance-${id}`);
+  if (ga)  ga.innerHTML = glanceHTML(env);
+}
+
+// ══════════════════════════════════════════════════════
+//  AUDIO
+// ══════════════════════════════════════════════════════
+function getACtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function playEnvSound(env) {
+  const ctx = getACtx(), now = ctx.currentTime;
+  const A=env.attack/1000, D=env.decay/1000, S=env.sustain/100, R=env.release/1000;
+  const sd = (env.attack+env.decay+env.release)*0.28/1000;
+  const osc=ctx.createOscillator(), gain=ctx.createGain();
+  osc.type = env.wave||'sine'; osc.frequency.value = 261.63;
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(1,   now+Math.max(A,.001));
+  gain.gain.linearRampToValueAtTime(S,   now+A+Math.max(D,.001));
+  gain.gain.setValueAtTime(S,            now+A+D+sd);
+  gain.gain.linearRampToValueAtTime(0,   now+A+D+sd+Math.max(R,.001));
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(now); osc.stop(now+A+D+sd+R+0.05);
+}
+
+// ══════════════════════════════════════════════════════
+//  ANIMATION (play with visual playhead)
+// ══════════════════════════════════════════════════════
+const SPEED = 0.35; // animation speed multiplier
+
+function playOne(id) {
+  const env = getEnv(id); if (!env) return;
+  if (animRafs[id]) {
+    cancelAnimationFrame(animRafs[id]); delete animRafs[id]; delete animElapsed[id]; drawAll(); return;
+  }
+  playEnvSound(env);
+  const total = env.attack+env.decay+env.release+Math.max(env.attack*.5,120);
+  animElapsed[id] = 0; let last = null;
+  const frame = ts => {
+    if (!last) last = ts;
+    animElapsed[id] += (ts-last)*SPEED; last = ts;
+    if (animElapsed[id] > total) {
+      delete animRafs[id]; delete animElapsed[id]; drawAll(); return;
+    }
+    drawAll({...animElapsed});
+    animRafs[id] = requestAnimationFrame(frame);
+  };
+  animRafs[id] = requestAnimationFrame(frame);
+}
+
+function togglePlayAll() {
+  const btn = document.getElementById('play-all-btn');
+  if (Object.keys(animRafs).length) {
+    Object.keys(animRafs).forEach(id => { cancelAnimationFrame(animRafs[id]); delete animRafs[id]; delete animElapsed[id]; });
+    btn.textContent = '▶ All'; drawAll(); return;
+  }
+  btn.textContent = '◼ Stop';
+  const playable = envelopes.filter(isVisible);
+  playable.forEach(env => {
+    playEnvSound(env);
+    const total = env.attack+env.decay+env.release+Math.max(env.attack*.5,120);
+    animElapsed[env.id] = 0; let last = null;
+    const frame = ts => {
+      if (!last) last = ts;
+      animElapsed[env.id] += (ts-last)*SPEED; last = ts;
+      if (animElapsed[env.id] > total) {
+        delete animRafs[env.id]; delete animElapsed[env.id];
+        if (!Object.keys(animRafs).length) { btn.textContent='▶ All'; drawAll(); }
+        return;
+      }
+      drawAll({...animElapsed});
+      animRafs[env.id] = requestAnimationFrame(frame);
+    };
+    animRafs[env.id] = requestAnimationFrame(frame);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  VIEW
+// ══════════════════════════════════════════════════════
+function setView(v) {
+  viewMode = v;
+  document.getElementById('vt-ov').classList.toggle('on', v==='overlay');
+  document.getElementById('vt-st').classList.toggle('on', v==='stack');
   drawAll();
 }
 
-// ═══════════════════ AUDIO ═══════════════════
-function getACtx(){
-  if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  if(audioCtx.state==='suspended')audioCtx.resume();
-  return audioCtx;
-}
-function playEnvSound(env){
-  const ctx=getACtx();const now=ctx.currentTime;
-  const A=env.attack/1000,D=env.decay/1000,S=env.sustain/100,R=env.release/1000;
-  const sd=(env.attack+env.decay+env.release)*0.28/1000;
-  const osc=ctx.createOscillator();const gain=ctx.createGain();
-  osc.type=env.wave||'sine';osc.frequency.value=261.63;
-  gain.gain.setValueAtTime(0,now);
-  gain.gain.linearRampToValueAtTime(1,now+Math.max(A,.001));
-  gain.gain.linearRampToValueAtTime(S,now+A+Math.max(D,.001));
-  gain.gain.setValueAtTime(S,now+A+D+sd);
-  gain.gain.linearRampToValueAtTime(0,now+A+D+sd+Math.max(R,.001));
-  osc.connect(gain);gain.connect(ctx.destination);
-  osc.start(now);osc.stop(now+A+D+sd+R+0.05);
-}
-
-// ═══════════════════ PLAY ANIMATION ═══════════════════
-function playOne(id){
-  const env=getEnv(id);if(!env)return;
-  if(animRafs[id]){cancelAnimationFrame(animRafs[id]);delete animRafs[id];delete animElapsed[id];drawAll();return;}
-  playEnvSound(env);
-  const total=env.attack+env.decay+env.release+Math.max(env.attack*.5,120);
-  const SPEED=0.35;animElapsed[id]=0;let last=null;
-  const frame=ts=>{
-    if(!last)last=ts;animElapsed[id]+=(ts-last)*SPEED;last=ts;
-    if(animElapsed[id]>total){delete animRafs[id];delete animElapsed[id];drawAll();return;}
-    drawAll({...animElapsed});
-    animRafs[id]=requestAnimationFrame(frame);
-  };
-  animRafs[id]=requestAnimationFrame(frame);
-}
-
-function togglePlayAll(){
-  const btn=document.getElementById('play-all-btn');
-  if(Object.keys(animRafs).length){
-    Object.keys(animRafs).forEach(id=>{cancelAnimationFrame(animRafs[id]);delete animRafs[id];delete animElapsed[id];});
-    btn.textContent='▶ Play All';drawAll();return;
-  }
-  btn.textContent='◼ Stop All';
-  const playable=envelopes.filter(isVisible);
-  playable.forEach(env=>playEnvSound(env));
-  playable.forEach(env=>{
-    const total=env.attack+env.decay+env.release+Math.max(env.attack*.5,120);
-    const SPEED=0.35;animElapsed[env.id]=0;let last=null;
-    const frame=ts=>{
-      if(!last)last=ts;animElapsed[env.id]+=(ts-last)*SPEED;last=ts;
-      if(animElapsed[env.id]>total){delete animRafs[env.id];delete animElapsed[env.id];
-        if(!Object.keys(animRafs).length){btn.textContent='▶ Play All';drawAll();}return;}
-      drawAll({...animElapsed});
-      animRafs[env.id]=requestAnimationFrame(frame);
-    };
-    animRafs[env.id]=requestAnimationFrame(frame);
-  });
-}
-
-// ═══════════════════ EXPORT ═══════════════════
-function openExport(){populateExport();document.getElementById('export-modal').classList.add('open');}
-
-function populateExport(){
-  document.getElementById('exp-json-code').textContent=JSON.stringify({version:1,envelopes:envelopes.map(e=>({...e}))},null,2);
-  document.getElementById('exp-svg-preview').innerHTML=document.getElementById('env-svg').innerHTML;
-  document.getElementById('exp-css-code').textContent=':root {\n'+envelopes.map(e=>`  /* ${e.name} */\n  --adsr-attack-${e.id}: ${e.attack}ms;\n  --adsr-decay-${e.id}: ${e.decay}ms;\n  --adsr-sustain-${e.id}: ${e.sustain/100};\n  --adsr-release-${e.id}: ${e.release}ms;`).join('\n\n')+'\n}';
-  document.getElementById('exp-wa-code').textContent=envelopes.map(e=>{
-    const A=e.attack/1000,D=e.decay/1000,S=e.sustain/100,R=e.release/1000;
-    return`// ${e.name} — ${e.wave}\nconst osc${e.id} = ctx.createOscillator();\nconst gain${e.id} = ctx.createGain();\nosc${e.id}.type = '${e.wave}';\ngain${e.id}.gain.setValueAtTime(0, now);\ngain${e.id}.gain.linearRampToValueAtTime(1, now + ${A});\ngain${e.id}.gain.linearRampToValueAtTime(${S}, now + ${(A+D).toFixed(3)});\ngain${e.id}.gain.linearRampToValueAtTime(0, now + ${(A+D+R).toFixed(3)});\nosc${e.id}.connect(gain${e.id}); gain${e.id}.connect(ctx.destination);\nosc${e.id}.start(now); osc${e.id}.stop(now + ${(A+D+R+.05).toFixed(3)});`;
+// ══════════════════════════════════════════════════════
+//  EXPORT
+// ══════════════════════════════════════════════════════
+function openExport() {
+  // JSON
+  document.getElementById('ec-json').textContent =
+    JSON.stringify({version:2,envelopes:envelopes.map(e=>({...e}))},null,2);
+  // SVG
+  document.getElementById('svg-preview').innerHTML = document.getElementById('env-svg').innerHTML;
+  // CSS
+  document.getElementById('ec-css').textContent =
+    ':root {\n' + envelopes.map(e =>
+      `  /* ${e.name} */\n  --adsr-attack-${e.id}: ${e.attack}ms;\n  --adsr-decay-${e.id}: ${e.decay}ms;\n  --adsr-sustain-${e.id}: ${e.sustain/100};\n  --adsr-release-${e.id}: ${e.release}ms;`
+    ).join('\n\n') + '\n}';
+  // Web Audio JS
+  document.getElementById('ec-js').textContent = envelopes.map(e => {
+    const A=e.attack/1000, D=e.decay/1000, S=e.sustain/100, R=e.release/1000;
+    return `// ${e.name} — ${e.wave}\nconst osc${e.id} = ctx.createOscillator();\nconst gain${e.id} = ctx.createGain();\nosc${e.id}.type = '${e.wave}';\ngain${e.id}.gain.setValueAtTime(0, now);\ngain${e.id}.gain.linearRampToValueAtTime(1, now + ${A});\ngain${e.id}.gain.linearRampToValueAtTime(${S}, now + ${(A+D).toFixed(3)});\ngain${e.id}.gain.linearRampToValueAtTime(0, now + ${(A+D+R).toFixed(3)});\nosc${e.id}.connect(gain${e.id}); gain${e.id}.connect(ctx.destination);\nosc${e.id}.start(now); osc${e.id}.stop(now + ${(A+D+R+.1).toFixed(3)});`;
   }).join('\n\n');
+  document.getElementById('export-modal').classList.add('open');
 }
-
-let activeExpPanel='ep-json';
-function switchTab(key,btn){
-  const map={json:'ep-json',svg:'ep-svg',css:'ep-css',webaudio:'ep-webaudio'};
-  activeExpPanel=map[key];
-  document.querySelectorAll('.exp-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-  document.querySelectorAll('.exp-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById(activeExpPanel).classList.add('active');
-  currentExpTab=key;
+function switchTab(key, btn) {
+  const map = {json:'ep-json',svg:'ep-svg',css:'ep-css',js:'ep-js'};
+  activeExpPanel = map[key];
+  document.querySelectorAll('.etab').forEach(b=>b.classList.remove('on')); btn.classList.add('on');
+  document.querySelectorAll('.epanel').forEach(p=>p.classList.remove('on'));
+  document.getElementById(activeExpPanel).classList.add('on');
 }
-
-function copyCurrentExport(){
-  const codeMap={'ep-json':'exp-json-code','ep-svg':null,'ep-css':'exp-css-code','ep-webaudio':'exp-wa-code'};
-  const cid=codeMap[activeExpPanel];
-  if(!cid){toast('Use Download for SVG');return;}
-  navigator.clipboard.writeText(document.getElementById(cid).textContent).then(()=>toast('Copied to clipboard'));
+function copyExp() {
+  const cmap = {'ep-json':'ec-json','ep-css':'ec-css','ep-js':'ec-js'};
+  const cid = cmap[activeExpPanel];
+  if (!cid) { toast('Use Download for SVG'); return; }
+  navigator.clipboard.writeText(document.getElementById(cid).textContent).then(()=>toast('Copied'));
 }
-
-function downloadCurrentExport(){
-  if(activeExpPanel==='ep-json') dl('adsr-envelopes.json',document.getElementById('exp-json-code').textContent,'application/json');
-  else if(activeExpPanel==='ep-svg'){
-    const svg=document.getElementById('env-svg');
-    dl('adsr-envelope.svg',`<svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">${svg.innerHTML}</svg>`,'image/svg+xml');
+function dlExp() {
+  if (activeExpPanel==='ep-json') dl('adsr-envelopes.json',document.getElementById('ec-json').textContent,'application/json');
+  else if (activeExpPanel==='ep-svg') {
+    const s = document.getElementById('env-svg');
+    dl('adsr-envelope.svg',`<svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">${s.innerHTML}</svg>`,'image/svg+xml');
   }
-  else if(activeExpPanel==='ep-css') dl('adsr-variables.css',document.getElementById('exp-css-code').textContent,'text/css');
-  else if(activeExpPanel==='ep-webaudio') dl('adsr-webaudio.js',document.getElementById('exp-wa-code').textContent,'text/javascript');
+  else if (activeExpPanel==='ep-css') dl('adsr-variables.css',document.getElementById('ec-css').textContent,'text/css');
+  else dl('adsr-webaudio.js',document.getElementById('ec-js').textContent,'text/javascript');
 }
-
-function dl(name,text,mime){
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=name;a.click();
+function dl(name, text, mime) {
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:mime})); a.download=name; a.click();
   toast('Downloaded '+name);
 }
 
-// ═══════════════════ IMPORT ═══════════════════
-function openImport(){document.getElementById('import-ta').value='';document.getElementById('import-err').style.display='none';document.getElementById('import-modal').classList.add('open');}
-
-function doImport(){
-  try{
-    const data=JSON.parse(document.getElementById('import-ta').value.trim());
-    if(!data.envelopes||!Array.isArray(data.envelopes))throw new Error('Missing envelopes array');
-    envelopes=data.envelopes.map(e=>({...mkEnv(),...e}));
-    idCounter=Math.max(...envelopes.map(e=>e.id),idCounter);
-    selectedId=envelopes.length?envelopes[0].id:null;
-    closeModal('import-modal');renderEnvList();renderControls();drawAll();
+// ══════════════════════════════════════════════════════
+//  IMPORT
+// ══════════════════════════════════════════════════════
+function openImport() {
+  document.getElementById('imp-ta').value='';
+  document.getElementById('imp-err').style.display='none';
+  document.getElementById('import-modal').classList.add('open');
+}
+function doImport() {
+  try {
+    const data = JSON.parse(document.getElementById('imp-ta').value.trim());
+    if (!data.envelopes||!Array.isArray(data.envelopes)) throw new Error('Missing envelopes array');
+    envelopes = data.envelopes.map(e=>({...mkEnv(),...e}));
+    idCounter = Math.max(...envelopes.map(e=>e.id), idCounter);
+    selectedId = envelopes.length ? envelopes[0].id : null;
+    closeModal('import-modal'); renderEnvList(); renderControls(); drawAll();
     toast('Imported '+envelopes.length+' envelope'+(envelopes.length!==1?'s':''));
-  }catch(err){
-    const el=document.getElementById('import-err');el.textContent='Error: '+err.message;el.style.display='block';
+  } catch(err) {
+    const el=document.getElementById('imp-err'); el.textContent='Error: '+err.message; el.style.display='block';
   }
 }
-
-window.addEventListener('dragover',e=>e.preventDefault());
-window.addEventListener('drop',e=>{
-  e.preventDefault();const f=e.dataTransfer.files[0];if(!f||!f.name.endsWith('.json'))return;
-  const r=new FileReader();r.onload=ev=>{document.getElementById('import-ta').value=ev.target.result;openImport();};r.readAsText(f);
+window.addEventListener('dragover', e=>e.preventDefault());
+window.addEventListener('drop', e => {
+  e.preventDefault(); const f=e.dataTransfer.files[0]; if(!f||!f.name.endsWith('.json')) return;
+  const r=new FileReader(); r.onload=ev=>{document.getElementById('imp-ta').value=ev.target.result;openImport();}; r.readAsText(f);
 });
 
-// ═══════════════════ UTILS ═══════════════════
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-function fmtMs(ms){if(ms>=1000)return(ms/1000).toFixed(ms%100===0?1:2).replace(/\.?0+$/,'')+'s';return Math.round(ms)+'ms';}
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
+// ══════════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════════
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function fmtMs(ms) {
+  if (ms>=1000) return (ms/1000).toFixed(ms%100===0?1:2).replace(/\.?0+$/,'')+'s';
+  return Math.round(ms)+'ms';
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),2400);
+}
+// Safe SVG coordinate conversion — handles zero-height SVG gracefully
+function svgCoords(e) {
+  const svg  = document.getElementById('env-svg');
+  const rect = svg.getBoundingClientRect();
+  if (rect.width < 1 || rect.height < 1) return null;
+  const cx = e.touches ? e.touches[0].clientX : e.clientX;
+  const cy = e.touches ? e.touches[0].clientY : e.clientY;
+  return {
+    x: (cx - rect.left) * (SVG_W / rect.width),
+    y: (cy - rect.top)  * (SVG_H / rect.height)
+  };
+}
 
-// ═══════════════════ BOOT ═══════════════════
-addEnvelope({name:'Envelope 1',attack:100,decay:300,sustain:65,release:500,wave:'sine',color:'#3A7BC8'});
-addEnvelope({name:'Envelope 2',attack:400,decay:200,sustain:80,release:900,wave:'sawtooth',color:'#C83A7B'});
-window.addEventListener('resize',drawAll);
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+addEnvelope({name:'Envelope 1',attack:100,decay:300,sustain:65,release:500,ac:0,dc:.65,rc:.65,wave:'sine',color:'#3A7BC8'});
+addEnvelope({name:'Envelope 2',attack:400,decay:200,sustain:80,release:900,ac:-.4,dc:.5,rc:.55,wave:'sawtooth',color:'#C83A7B'});
+window.addEventListener('resize', drawAll);
 </script>
 </body>
 </html>
