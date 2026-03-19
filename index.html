@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADSR — Envelope Visualizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #F5F0E8;
+    --warm-white: #FAF7F2;
+    --ink: #1A1714;
+    --ink-light: #4A4540;
+    --ink-faint: #9A948E;
+    --amber: #C8873A;
+    --amber-light: #E8A855;
+    --amber-pale: #F5E4CC;
+    --rule: #DDD8CF;
+    --attack: #3A7BC8;
+    --decay: #C83A7B;
+    --sustain: #3AC87B;
+    --release: #C8873A;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* ── Layout ── */
+  .masthead {
+    padding: 28px 48px 0;
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 20px;
+  }
+  .masthead-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .masthead-sub {
+    font-size: 11px;
+    letter-spacing: .08em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+  .masthead-pill {
+    margin-left: auto;
+    background: var(--ink);
+    color: var(--warm-white);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 20px;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    grid-template-rows: auto auto;
+    gap: 0;
+    min-height: calc(100vh - 70px);
+  }
+
+  /* ── Stage strip ── */
+  .stage-strip {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--rule);
+  }
+  .stage-card {
+    padding: 18px 24px 16px;
+    border-right: 1px solid var(--rule);
+    position: relative;
+    cursor: default;
+  }
+  .stage-card:last-child { border-right: none; }
+  .stage-card .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+  .stage-card.attack .dot { background: var(--attack); }
+  .stage-card.decay  .dot { background: var(--decay); }
+  .stage-card.sustain .dot { background: var(--sustain); }
+  .stage-card.release .dot { background: var(--release); }
+  .stage-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: .04em;
+    vertical-align: middle;
+  }
+  .stage-value {
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 4px;
+    letter-spacing: .04em;
+  }
+  .stage-desc {
+    font-size: 11px;
+    color: var(--ink-light);
+    margin-top: 6px;
+    line-height: 1.55;
+    font-weight: 300;
+  }
+  .stage-card.active-stage {
+    background: var(--amber-pale);
+  }
+
+  /* ── Canvas area ── */
+  .canvas-area {
+    padding: 32px 48px 32px 48px;
+    border-right: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .canvas-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .canvas-label {
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .canvas-header-right {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .btn {
+    cursor: pointer;
+    border: 1px solid var(--rule);
+    background: transparent;
+    padding: 7px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink);
+    border-radius: 2px;
+    transition: background .18s, color .18s;
+  }
+  .btn:hover { background: var(--ink); color: var(--warm-white); }
+  .btn-play {
+    background: var(--ink);
+    color: var(--warm-white);
+    border-color: var(--ink);
+  }
+  .btn-play:hover { background: var(--amber); border-color: var(--amber); color: #fff; }
+  .btn-play.playing { background: var(--amber); border-color: var(--amber); }
+
+  #envelope-svg {
+    width: 100%;
+    border: 1px solid var(--rule);
+    background: var(--warm-white);
+    border-radius: 4px;
+    cursor: crosshair;
+    display: block;
+    user-select: none;
+  }
+
+  /* ── Controls sidebar ── */
+  .controls-sidebar {
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .sidebar-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 24px;
+  }
+
+  .control-group {
+    margin-bottom: 26px;
+  }
+  .control-header {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .control-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: .02em;
+  }
+  .control-unit {
+    font-size: 10px;
+    color: var(--ink-faint);
+    margin-left: 6px;
+    letter-spacing: .06em;
+  }
+  .control-num {
+    margin-left: auto;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    letter-spacing: .04em;
+    min-width: 40px;
+    text-align: right;
+  }
+  .attack-val  { color: var(--attack); }
+  .decay-val   { color: var(--decay); }
+  .sustain-val { color: var(--sustain); }
+  .release-val { color: var(--release); }
+
+  .slider-track {
+    position: relative;
+    height: 3px;
+    background: var(--rule);
+    border-radius: 2px;
+    margin-bottom: 2px;
+  }
+  .slider-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .attack-fill  { background: var(--attack); }
+  .decay-fill   { background: var(--decay); }
+  .sustain-fill { background: var(--sustain); }
+  .release-fill { background: var(--release); }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 3px;
+    background: transparent;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 2px solid var(--cream);
+    box-shadow: 0 0 0 1px var(--ink);
+    transition: transform .12s;
+    margin-top: -5px;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    transform: scale(1.25);
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 3px;
+    background: transparent;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 2px solid var(--cream);
+    cursor: pointer;
+  }
+
+  .control-divider {
+    height: 1px;
+    background: var(--rule);
+    margin: 10px 0 26px;
+  }
+
+  /* ── Info footer strip ── */
+  .info-bar {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    padding: 14px 48px;
+    gap: 40px;
+    align-items: center;
+    background: var(--warm-white);
+  }
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .info-key {
+    font-size: 9px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .info-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .info-bar-tip {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-style: italic;
+  }
+
+  /* ── Playhead ── */
+  #playhead {
+    display: none;
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: var(--amber);
+    pointer-events: none;
+  }
+  .svg-wrapper {
+    position: relative;
+  }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    background: var(--ink);
+    color: var(--warm-white);
+    font-size: 10px;
+    letter-spacing: .06em;
+    padding: 5px 10px;
+    border-radius: 3px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .15s;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  .tooltip.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- Masthead -->
+<header class="masthead">
+  <span class="masthead-title">ADSR</span>
+  <span class="masthead-sub">Amplitude Envelope Visualizer</span>
+  <span class="masthead-pill">Sound Design Tool</span>
+</header>
+
+<!-- Stage strip -->
+<div class="layout">
+  <div class="stage-strip">
+    <div class="stage-card attack" id="sc-attack">
+      <div><span class="dot"></span><span class="stage-label">Attack</span></div>
+      <div class="stage-value" id="sv-attack">120 ms</div>
+      <div class="stage-desc">Time for the signal to rise from silence to its peak amplitude after a note is triggered.</div>
+    </div>
+    <div class="stage-card decay" id="sc-decay">
+      <div><span class="dot"></span><span class="stage-label">Decay</span></div>
+      <div class="stage-value" id="sv-decay">300 ms</div>
+      <div class="stage-desc">Time taken to fall from peak level down to the sustained level.</div>
+    </div>
+    <div class="stage-card sustain" id="sc-sustain">
+      <div><span class="dot"></span><span class="stage-label">Sustain</span></div>
+      <div class="stage-value" id="sv-sustain">65%</div>
+      <div class="stage-desc">Amplitude level held for as long as the note is depressed. Not a time value — it's a level.</div>
+    </div>
+    <div class="stage-card release" id="sc-release">
+      <div><span class="dot"></span><span class="stage-label">Release</span></div>
+      <div class="stage-value" id="sv-release">500 ms</div>
+      <div class="stage-desc">Time for the signal to fade from sustain level back to silence after the note is released.</div>
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div class="canvas-area">
+    <div class="canvas-header">
+      <span class="canvas-label">Envelope Shape</span>
+      <span style="font-size:11px;color:var(--ink-faint);margin-left:8px;">Drag the white handles to reshape</span>
+      <div class="canvas-header-right">
+        <button class="btn" onclick="resetDefaults()">Reset</button>
+        <button class="btn btn-play" id="play-btn" onclick="playAnimation()">▶ Play</button>
+      </div>
+    </div>
+    <div class="svg-wrapper">
+      <svg id="envelope-svg" viewBox="0 0 700 260" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="controls-sidebar">
+    <div class="sidebar-title">Parameters</div>
+
+    <div class="control-group">
+      <div class="control-header">
+        <span class="control-name" style="color:var(--attack)">Attack</span>
+        <span class="control-unit">time</span>
+        <span class="control-num attack-val" id="cn-attack">120 ms</span>
+      </div>
+      <div class="slider-track">
+        <div class="slider-fill attack-fill" id="sf-attack" style="width:24%"></div>
+        <input type="range" id="sl-attack" min="1" max="2000" value="120" step="1" oninput="updateEnvelope()">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <div class="control-header">
+        <span class="control-name" style="color:var(--decay)">Decay</span>
+        <span class="control-unit">time</span>
+        <span class="control-num decay-val" id="cn-decay">300 ms</span>
+      </div>
+      <div class="slider-track">
+        <div class="slider-fill decay-fill" id="sf-decay" style="width:30%"></div>
+        <input type="range" id="sl-decay" min="1" max="2000" value="300" step="1" oninput="updateEnvelope()">
+      </div>
+    </div>
+
+    <div class="control-divider"></div>
+
+    <div class="control-group">
+      <div class="control-header">
+        <span class="control-name" style="color:var(--sustain)">Sustain</span>
+        <span class="control-unit">level</span>
+        <span class="control-num sustain-val" id="cn-sustain">65%</span>
+      </div>
+      <div class="slider-track">
+        <div class="slider-fill sustain-fill" id="sf-sustain" style="width:65%"></div>
+        <input type="range" id="sl-sustain" min="0" max="100" value="65" step="1" oninput="updateEnvelope()">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <div class="control-header">
+        <span class="control-name" style="color:var(--release)">Release</span>
+        <span class="control-unit">time</span>
+        <span class="control-num release-val" id="cn-release">500 ms</span>
+      </div>
+      <div class="slider-track">
+        <div class="slider-fill release-fill" id="sf-release" style="width:25%"></div>
+        <input type="range" id="sl-release" min="1" max="3000" value="500" step="1" oninput="updateEnvelope()">
+      </div>
+    </div>
+
+    <div style="margin-top:auto;padding-top:20px;border-top:1px solid var(--rule)">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px;">Presets</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;">
+        <button class="btn" style="font-size:10px;padding:5px 12px" onclick="loadPreset('piano')">Piano</button>
+        <button class="btn" style="font-size:10px;padding:5px 12px" onclick="loadPreset('pad')">Pad</button>
+        <button class="btn" style="font-size:10px;padding:5px 12px" onclick="loadPreset('pluck')">Pluck</button>
+        <button class="btn" style="font-size:10px;padding:5px 12px" onclick="loadPreset('organ')">Organ</button>
+        <button class="btn" style="font-size:10px;padding:5px 12px" onclick="loadPreset('kick')">Kick</button>
+      </div>
+      <div style="margin-top:18px;font-size:10px;color:var(--ink-faint);line-height:1.7">
+        ADSR envelopes shape how amplitude evolves over the lifecycle of a note. Found in synthesizers, samplers, and nearly every digital audio workstation.
+      </div>
+    </div>
+  </div>
+
+  <!-- Info bar -->
+  <div class="info-bar">
+    <div class="info-item">
+      <span class="info-key">Total Duration</span>
+      <span class="info-val" id="info-total">—</span>
+    </div>
+    <div class="info-item">
+      <span class="info-key">Peak → Sustain Drop</span>
+      <span class="info-val" id="info-drop">—</span>
+    </div>
+    <div class="info-item">
+      <span class="info-key">Attack Speed</span>
+      <span class="info-val" id="info-aspeed">—</span>
+    </div>
+    <div class="info-item">
+      <span class="info-key">Release Tail</span>
+      <span class="info-val" id="info-rtail">—</span>
+    </div>
+    <div class="info-bar-tip">Drag handles on the envelope for fine control</div>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────
+const PAD = { left: 48, right: 48, top: 30, bottom: 40 };
+const H = 260;
+const svg = document.getElementById('envelope-svg');
+
+let params = { attack: 120, decay: 300, sustain: 65, release: 500 };
+let animRaf = null;
+let animStart = null;
+
+const presets = {
+  piano:  { attack: 8,   decay: 600,  sustain: 40, release: 300 },
+  pad:    { attack: 800, decay: 400,  sustain: 80, release: 1200 },
+  pluck:  { attack: 5,   decay: 180,  sustain: 0,  release: 80 },
+  organ:  { attack: 10,  decay: 0,    sustain: 100,release: 20 },
+  kick:   { attack: 3,   decay: 180,  sustain: 0,  release: 60 },
+};
+
+// ── Coordinate math ────────────────────────────────────
+function getW() {
+  const bbox = svg.getBoundingClientRect();
+  return bbox.width || 700;
+}
+
+function svgWidth() {
+  return 700; // viewBox width
+}
+
+function noteEndX() { return svgWidth() - PAD.right - 80; }
+function totalMs() { return params.attack + params.decay + params.release + Math.max(params.attack * .5, 100); }
+
+function msToX(ms, total) {
+  const usable = svgWidth() - PAD.left - PAD.right;
+  return PAD.left + (ms / total) * usable;
+}
+
+function ampToY(pct) {
+  const usable = H - PAD.top - PAD.bottom;
+  return PAD.top + usable * (1 - pct / 100);
+}
+
+// Key points
+function getPoints() {
+  const total = totalMs();
+  const sustainDur = total * 0.28;
+  const t0 = 0;
+  const t1 = params.attack;
+  const t2 = t1 + params.decay;
+  const t3 = t2 + sustainDur;
+  const t4 = t3 + params.release;
+
+  return {
+    total,
+    start:   { x: msToX(t0, total), y: ampToY(0),   t: t0 },
+    peak:    { x: msToX(t1, total), y: ampToY(100),  t: t1 },
+    sus:     { x: msToX(t2, total), y: ampToY(params.sustain), t: t2 },
+    susEnd:  { x: msToX(t3, total), y: ampToY(params.sustain), t: t3 },
+    end:     { x: msToX(t4, total), y: ampToY(0),   t: t4 },
+  };
+}
+
+// ── Draw ───────────────────────────────────────────────
+function draw(playT = null) {
+  const p = getPoints();
+  svg.innerHTML = '';
+
+  const ns = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs) {
+    const e = document.createElementNS(ns, tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    return e;
+  }
+
+  // Grid lines
+  for (let i = 0; i <= 4; i++) {
+    const y = ampToY(i * 25);
+    const line = el('line', { x1: PAD.left, y1: y, x2: svgWidth() - PAD.right, y2: y,
+      stroke: '#DDD8CF', 'stroke-width': .8, 'stroke-dasharray': i === 0 ? 'none' : '3,4' });
+    svg.appendChild(line);
+    if (i > 0) {
+      const lbl = el('text', { x: PAD.left - 8, y: y + 3.5, 'text-anchor': 'end',
+        fill: '#9A948E', 'font-size': '9', 'font-family': 'DM Sans, sans-serif', 'letter-spacing': '.04em' });
+      lbl.textContent = (i * 25) + '%';
+      svg.appendChild(lbl);
+    }
+  }
+
+  // Bottom axis
+  svg.appendChild(el('line', { x1: PAD.left, y1: H - PAD.bottom, x2: svgWidth() - PAD.right, y2: H - PAD.bottom,
+    stroke: '#DDD8CF', 'stroke-width': 1 }));
+
+  // Stage labels under x-axis
+  function stageLabel(x, txt, col) {
+    const t = el('text', { x, y: H - PAD.bottom + 16, 'text-anchor': 'middle',
+      fill: col, 'font-size': '9', 'font-family': 'DM Sans, sans-serif',
+      'letter-spacing': '.1em', 'text-transform': 'uppercase' });
+    t.textContent = txt;
+    svg.appendChild(t);
+  }
+  stageLabel((p.start.x + p.peak.x) / 2,  'A', 'var(--attack)');
+  stageLabel((p.peak.x  + p.sus.x)  / 2,  'D', 'var(--decay)');
+  stageLabel((p.sus.x   + p.susEnd.x)/2,  'S', 'var(--sustain)');
+  stageLabel((p.susEnd.x + p.end.x)  / 2, 'R', 'var(--release)');
+
+  // Stage dividers
+  [{x: p.peak.x, col:'var(--attack)'}, {x: p.sus.x, col:'var(--decay)'},
+   {x: p.susEnd.x, col:'var(--sustain)'}].forEach(({x, col}) => {
+    svg.appendChild(el('line', { x1: x, y1: PAD.top - 8, x2: x, y2: H - PAD.bottom,
+      stroke: col, 'stroke-width': .6, 'stroke-dasharray': '2,3', opacity: .55 }));
+  });
+
+  // Filled area under curve
+  const fillPath = [
+    `M ${p.start.x},${H - PAD.bottom}`,
+    `L ${p.start.x},${p.start.y}`,
+    `C ${p.start.x + (p.peak.x - p.start.x) * 0.5},${p.start.y} ${p.peak.x},${p.peak.y} ${p.peak.x},${p.peak.y}`,
+    `C ${p.peak.x + (p.sus.x - p.peak.x) * 0.4},${p.peak.y} ${p.sus.x},${p.sus.y} ${p.sus.x},${p.sus.y}`,
+    `L ${p.susEnd.x},${p.susEnd.y}`,
+    `C ${p.susEnd.x + (p.end.x - p.susEnd.x) * 0.5},${p.susEnd.y} ${p.end.x},${p.end.y} ${p.end.x},${p.end.y}`,
+    `L ${p.end.x},${H - PAD.bottom}`, `Z`
+  ].join(' ');
+
+  const grad = el('defs', {});
+  const lg = el('linearGradient', { id: 'envGrad', x1: '0', y1: '0', x2: '0', y2: '1' });
+  const s1 = el('stop', { offset: '0%', 'stop-color': 'var(--amber)', 'stop-opacity': '.18' });
+  const s2 = el('stop', { offset: '100%', 'stop-color': 'var(--amber)', 'stop-opacity': '.03' });
+  lg.appendChild(s1); lg.appendChild(s2); grad.appendChild(lg); svg.appendChild(grad);
+
+  svg.appendChild(el('path', { d: fillPath, fill: 'url(#envGrad)' }));
+
+  // Main curve stroke
+  const strokePath = [
+    `M ${p.start.x},${p.start.y}`,
+    `C ${p.start.x + (p.peak.x - p.start.x) * 0.5},${p.start.y} ${p.peak.x},${p.peak.y} ${p.peak.x},${p.peak.y}`,
+    `C ${p.peak.x + (p.sus.x - p.peak.x) * 0.4},${p.peak.y} ${p.sus.x},${p.sus.y} ${p.sus.x},${p.sus.y}`,
+    `L ${p.susEnd.x},${p.susEnd.y}`,
+    `C ${p.susEnd.x + (p.end.x - p.susEnd.x) * 0.5},${p.susEnd.y} ${p.end.x},${p.end.y} ${p.end.x},${p.end.y}`,
+  ].join(' ');
+  svg.appendChild(el('path', { d: strokePath, fill: 'none', stroke: 'var(--ink)', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+
+  // Colored segment highlights
+  const segs = [
+    { path: `M ${p.start.x},${p.start.y} C ${p.start.x + (p.peak.x - p.start.x)*0.5},${p.start.y} ${p.peak.x},${p.peak.y} ${p.peak.x},${p.peak.y}`, col: 'var(--attack)' },
+    { path: `M ${p.peak.x},${p.peak.y} C ${p.peak.x + (p.sus.x - p.peak.x)*0.4},${p.peak.y} ${p.sus.x},${p.sus.y} ${p.sus.x},${p.sus.y}`, col: 'var(--decay)' },
+    { path: `M ${p.sus.x},${p.sus.y} L ${p.susEnd.x},${p.susEnd.y}`, col: 'var(--sustain)' },
+    { path: `M ${p.susEnd.x},${p.susEnd.y} C ${p.susEnd.x + (p.end.x - p.susEnd.x)*0.5},${p.susEnd.y} ${p.end.x},${p.end.y} ${p.end.x},${p.end.y}`, col: 'var(--release)' },
+  ];
+  segs.forEach(s => {
+    svg.appendChild(el('path', { d: s.path, fill: 'none', stroke: s.col, 'stroke-width': '3', 'stroke-linecap': 'round', opacity: '.55' }));
+  });
+
+  // Playhead
+  if (playT !== null) {
+    const phX = msToX(playT, p.total);
+    svg.appendChild(el('line', { x1: phX, y1: PAD.top, x2: phX, y2: H - PAD.bottom,
+      stroke: 'var(--amber)', 'stroke-width': '1.5', opacity: '.85' }));
+
+    // Playhead dot on curve
+    const phY = getYAtT(playT, p);
+    if (phY !== null) {
+      const cir = el('circle', { cx: phX, cy: phY, r: 5, fill: 'var(--amber)', stroke: 'white', 'stroke-width': 2 });
+      svg.appendChild(cir);
+    }
+  }
+
+  // Draggable handles
+  [
+    { pt: p.peak,   id: 'h-peak',   col: 'var(--attack)' },
+    { pt: p.sus,    id: 'h-sus',    col: 'var(--decay)' },
+    { pt: p.susEnd, id: 'h-susend', col: 'var(--sustain)' },
+  ].forEach(({ pt, id, col }) => {
+    const g = el('g', { id, class: 'handle', cursor: 'grab', style: `cursor:grab` });
+    g.appendChild(el('circle', { cx: pt.x, cy: pt.y, r: 14, fill: 'transparent' }));
+    g.appendChild(el('circle', { cx: pt.x, cy: pt.y, r: 6, fill: 'white', stroke: col, 'stroke-width': 2 }));
+    g.appendChild(el('circle', { cx: pt.x, cy: pt.y, r: 2.5, fill: col }));
+    svg.appendChild(g);
+    makeDraggable(g, id, p);
+  });
+
+  updateInfoBar();
+  updateStageSidebar(p);
+}
+
+function getYAtT(t, p) {
+  const ratio = t / p.total;
+  const uw = svgWidth() - PAD.left - PAD.right;
+  const x = PAD.left + ratio * uw;
+  // approximate
+  if (t <= p.peak.t) {
+    const r = t / Math.max(p.peak.t, 1);
+    return p.start.y + (p.peak.y - p.start.y) * r;
+  } else if (t <= p.sus.t) {
+    const r = (t - p.peak.t) / Math.max(p.sus.t - p.peak.t, 1);
+    return p.peak.y + (p.sus.y - p.peak.y) * r;
+  } else if (t <= p.susEnd.t) {
+    return p.sus.y;
+  } else {
+    const r = (t - p.susEnd.t) / Math.max(p.end.t - p.susEnd.t, 1);
+    return p.susEnd.y + (p.end.y - p.susEnd.y) * r;
+  }
+}
+
+// ── Draggable ──────────────────────────────────────────
+function makeDraggable(el, handleId, p) {
+  let dragging = false;
+  const startDrag = (e) => {
+    dragging = true;
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', stopDrag);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', stopDrag);
+  };
+  const stopDrag = () => {
+    dragging = false;
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', stopDrag);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', stopDrag);
+  };
+  const onMove = (e) => {
+    if (!dragging) return;
+    e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    const rect = svg.getBoundingClientRect();
+    const scaleX = 700 / rect.width;
+    const scaleY = H / rect.height;
+    const svgX = (clientX - rect.left) * scaleX;
+    const svgY = (clientY - rect.top) * scaleY;
+
+    const uw = svgWidth() - PAD.left - PAD.right;
+    const uh = H - PAD.top - PAD.bottom;
+    const total = p.total;
+
+    if (handleId === 'h-peak') {
+      // Moving attack handle: change attack time (X only)
+      const newMs = Math.max(1, ((svgX - PAD.left) / uw) * total);
+      params.attack = Math.min(newMs, 2000);
+      // also ensure decay doesn't exceed total
+    } else if (handleId === 'h-sus') {
+      // Moving decay handle: change decay time (X) and sustain level (Y)
+      const decayEndMs = ((svgX - PAD.left) / uw) * total;
+      params.decay = Math.max(1, Math.min(decayEndMs - params.attack, 2000));
+      const ampPct = 100 - ((svgY - PAD.top) / uh) * 100;
+      params.sustain = Math.max(0, Math.min(100, Math.round(ampPct)));
+    } else if (handleId === 'h-susend') {
+      // Only move X: changes implied release timing
+      const susEndMs = ((svgX - PAD.left) / uw) * total;
+      const sustainDur = susEndMs - params.attack - params.decay;
+      // We don't expose sustain duration as a param explicitly but the layout adjusts
+      // So we just leave it as-is; the layout always auto-sizes sustain duration
+    }
+
+    syncSlidersFromParams();
+    updateEnvelope();
+  };
+  el.addEventListener('mousedown', startDrag);
+  el.addEventListener('touchstart', startDrag, { passive: false });
+}
+
+// ── Sync ───────────────────────────────────────────────
+function syncSlidersFromParams() {
+  document.getElementById('sl-attack').value  = params.attack;
+  document.getElementById('sl-decay').value   = params.decay;
+  document.getElementById('sl-sustain').value = params.sustain;
+  document.getElementById('sl-release').value = params.release;
+}
+
+function updateEnvelope() {
+  params.attack  = +document.getElementById('sl-attack').value;
+  params.decay   = +document.getElementById('sl-decay').value;
+  params.sustain = +document.getElementById('sl-sustain').value;
+  params.release = +document.getElementById('sl-release').value;
+
+  // Update slider fills
+  document.getElementById('sf-attack').style.width  = (params.attack  / 2000 * 100) + '%';
+  document.getElementById('sf-decay').style.width   = (params.decay   / 2000 * 100) + '%';
+  document.getElementById('sf-sustain').style.width = params.sustain + '%';
+  document.getElementById('sf-release').style.width = (params.release / 3000 * 100) + '%';
+
+  // Update numeric displays
+  document.getElementById('cn-attack').textContent  = formatMs(params.attack);
+  document.getElementById('cn-decay').textContent   = formatMs(params.decay);
+  document.getElementById('cn-sustain').textContent = params.sustain + '%';
+  document.getElementById('cn-release').textContent = formatMs(params.release);
+
+  // Update stage cards
+  document.getElementById('sv-attack').textContent  = formatMs(params.attack);
+  document.getElementById('sv-decay').textContent   = formatMs(params.decay);
+  document.getElementById('sv-sustain').textContent = params.sustain + '%';
+  document.getElementById('sv-release').textContent = formatMs(params.release);
+
+  draw();
+}
+
+function formatMs(ms) {
+  if (ms >= 1000) return (ms / 1000).toFixed(2).replace(/\.?0+$/, '') + ' s';
+  return Math.round(ms) + ' ms';
+}
+
+function updateInfoBar() {
+  const total = params.attack + params.decay + params.release;
+  document.getElementById('info-total').textContent = formatMs(total);
+  document.getElementById('info-drop').textContent = (100 - params.sustain) + '%';
+  document.getElementById('info-aspeed').textContent = params.attack < 50 ? 'Percussive' : params.attack < 300 ? 'Medium' : 'Slow';
+  document.getElementById('info-rtail').textContent = params.release < 100 ? 'Tight' : params.release < 600 ? 'Natural' : 'Long';
+}
+
+function updateStageSidebar(p) {
+  // Highlight active stage card based on nothing (no playback) - just update values
+}
+
+// ── Animation ─────────────────────────────────────────
+function playAnimation() {
+  if (animRaf) {
+    cancelAnimationFrame(animRaf);
+    animRaf = null;
+    document.getElementById('play-btn').classList.remove('playing');
+    document.getElementById('play-btn').textContent = '▶ Play';
+    draw();
+    return;
+  }
+  const p = getPoints();
+  const totalDuration = p.total;
+  const SPEED = 0.35; // ms per real ms
+  document.getElementById('play-btn').classList.add('playing');
+  document.getElementById('play-btn').textContent = '◼ Stop';
+
+  // Highlight stage cards
+  const stages = ['sc-attack','sc-decay','sc-sustain','sc-release'];
+  stages.forEach(id => document.getElementById(id).classList.remove('active-stage'));
+
+  let elapsed = 0;
+  let last = null;
+
+  function frame(ts) {
+    if (!last) last = ts;
+    const delta = ts - last;
+    last = ts;
+    elapsed += delta * SPEED;
+
+    if (elapsed > totalDuration) {
+      cancelAnimationFrame(animRaf);
+      animRaf = null;
+      document.getElementById('play-btn').classList.remove('playing');
+      document.getElementById('play-btn').textContent = '▶ Play';
+      stages.forEach(id => document.getElementById(id).classList.remove('active-stage'));
+      draw();
+      return;
+    }
+
+    draw(elapsed);
+
+    // Stage highlighting
+    stages.forEach(id => document.getElementById(id).classList.remove('active-stage'));
+    if      (elapsed <= p.peak.t)    document.getElementById('sc-attack').classList.add('active-stage');
+    else if (elapsed <= p.sus.t)     document.getElementById('sc-decay').classList.add('active-stage');
+    else if (elapsed <= p.susEnd.t)  document.getElementById('sc-sustain').classList.add('active-stage');
+    else                             document.getElementById('sc-release').classList.add('active-stage');
+
+    animRaf = requestAnimationFrame(frame);
+  }
+  animRaf = requestAnimationFrame(frame);
+}
+
+// ── Presets ────────────────────────────────────────────
+function loadPreset(name) {
+  const pr = presets[name];
+  if (!pr) return;
+  Object.assign(params, pr);
+  syncSlidersFromParams();
+  updateEnvelope();
+}
+
+function resetDefaults() {
+  params = { attack: 120, decay: 300, sustain: 65, release: 500 };
+  syncSlidersFromParams();
+  updateEnvelope();
+}
+
+// ── Init ───────────────────────────────────────────────
+updateEnvelope();
+
+// Re-draw on resize
+window.addEventListener('resize', () => draw());
+</script>
+</body>
+</html>
