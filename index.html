@@ -848,17 +848,51 @@ function getACtx() {
 }
 function playEnvSound(env) {
   const ctx = getACtx(), now = ctx.currentTime;
-  const A=env.attack/1000, D=env.decay/1000, S=env.sustain/100, R=env.release/1000;
-  const sd = (env.attack+env.decay+env.release)*0.28/1000;
-  const osc=ctx.createOscillator(), gain=ctx.createGain();
-  osc.type = env.wave||'sine'; osc.frequency.value = 261.63;
+
+  // Raw durations in seconds
+  const A_raw = env.attack  / 1000;
+  const D_raw = env.decay   / 1000;
+  const S     = env.sustain / 100;   // level, not time
+  const R_raw = env.release / 1000;
+
+  // Hard cap: total playback <= 3.0 s
+  const CAP     = 3.0;
+  const adsrRaw = A_raw + D_raw + R_raw;
+  const scale   = adsrRaw > CAP ? CAP / adsrRaw : 1;
+  const A       = Math.max(A_raw * scale, 0.001);
+  const D       = Math.max(D_raw * scale, 0.001);
+  const R       = Math.max(R_raw * scale, 0.001);
+  // Sustain hold fills whatever time remains inside the cap
+  const sd      = Math.max(CAP - A - D - R, 0.05);
+
+  const tDecayEnd = now + A + D;    // moment sustain level is reached
+  const tSusEnd   = tDecayEnd + sd; // note-off point
+  const tEnd      = tSusEnd + R;    // silence
+
+  const osc  = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type            = env.wave || 'sine';
+  osc.frequency.value = 261.63; // middle C
+
+  // 1. Start silent
   gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(1,   now+Math.max(A,.001));
-  gain.gain.linearRampToValueAtTime(S,   now+A+Math.max(D,.001));
-  gain.gain.setValueAtTime(S,            now+A+D+sd);
-  gain.gain.linearRampToValueAtTime(0,   now+A+D+sd+Math.max(R,.001));
-  osc.connect(gain); gain.connect(ctx.destination);
-  osc.start(now); osc.stop(now+A+D+sd+R+0.05);
+  // 2. Attack ramp to peak
+  gain.gain.linearRampToValueAtTime(1, now + A);
+  // 3. Decay ramp to sustain level
+  gain.gain.linearRampToValueAtTime(S, tDecayEnd);
+  // 4. ANCHOR — explicit setValueAtTime at sustain level immediately after decay.
+  //    Without this the scheduler has no hold event and the next ramp treats the
+  //    decay tail as its start, dropping gain straight to 0 instead of holding S.
+  gain.gain.setValueAtTime(S, tDecayEnd);
+  // 5. Hold — second anchor at note-off so release ramps from S, not from wherever
+  gain.gain.setValueAtTime(S, tSusEnd);
+  // 6. Release ramp to silence
+  gain.gain.linearRampToValueAtTime(0, tEnd);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(tEnd + 0.02); // tiny tail prevents click on cut
 }
 
 // ══════════════════════════════════════════════════════
